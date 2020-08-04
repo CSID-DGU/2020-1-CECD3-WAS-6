@@ -29,6 +29,77 @@ Program Synthesis
 - DeepLearning
 
 
+## **Run**
+### Frontend
+* Node.js
+* React.js 16.4 
+
+1. Clone the repository. 
+
+    ```
+    https://github.com/CSID-DGU/2020-1-CECD3-WAS-6.git
+    ```
+    
+1. Move into the project directory. 
+
+    ```
+    cd 2020-1-CECD3-WAS-6/Source/web-frontend
+    ```
+	
+1. Install all the required libraries Reactjs
+
+    ```
+    npm install 
+    ```
+1. Create .env file
+
+    ```
+    REACT_APP_SERVER_API=http://localhost:3001 
+    ```
+
+1. Run the application.
+
+    ```
+    npm start
+    ```
+    
+1. Go to `http://localhost:8080`
+
+---
+### Backend
+* Python 3 
+
+1. Move into the project directory. 
+
+    ```
+    2020-1-CECD3-WAS-6/Source/web-server
+    ```
+	
+1. Install all the required libraries, by installing the requirements.txt file.
+
+    ```
+    npm install 
+    ```
+
+1. Create env file.
+
+    ```
+    MYSQL_HOST=localhost
+    MYSQL_PORT=3306
+    MYSQL_USER=root
+    MYSQL_PASS=
+    MYSQL_DB=was_ide
+
+    PORT=3001
+    TOKEN=wasteamdongguk
+    ```
+    
+1. Run the application.
+
+    ```
+    nodemon
+    ```
+    
 
 ## **Member**
 
