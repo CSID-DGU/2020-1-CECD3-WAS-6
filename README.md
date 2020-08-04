@@ -75,7 +75,7 @@ Program Synthesis
     2020-1-CECD3-WAS-6/Source/web-server
     ```
 	
-1. Install all the required libraries, by installing the requirements.txt file.
+1. Install all the required libraries
 
     ```
     npm install 
@@ -93,7 +93,8 @@ Program Synthesis
     PORT=3001
     TOKEN=wasteamdongguk
     ```
-    
+1. Create database['was_ide'] with sql.sql file
+   
 1. Run the application.
 
     ```
