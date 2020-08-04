@@ -1,25 +1,39 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {Suspense} from 'react';
+import { BrowserRouter as  Router, Switch, Route} from 'react-router-dom'
+
+
+import { Header, Footer } from './components';
+import Loading from './components/Loading';
+
+
+import Auth from './hoc/auth'
+
+
+const Dashboard = React.lazy(() => import('./fetures/Dashboard'));
+const Login = React.lazy(() => import('./fetures/Login'));
+const Register = React.lazy(() => import('./fetures/Register'))
+const Editor = React.lazy(() => import('./fetures/Editor'))
+const Error = React.lazy(() => import('./components/Error'));
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+  <Suspense fallback={<Loading/>}>  
+      <Router>
+      <Header/>
+        <Switch>
+          
+        <Route exact path='/'     component={Auth(Dashboard, null)} />
+        <Route exact path='/signin' component={Auth(Login, false)} />
+        <Route exact path='/signup' component ={Auth(Register, false)} />
+        <Route exact path='/editor' component={Auth(Editor, null)} />
+
+        <Route path ='*'>
+          <Error/>
+        </Route>
+        </Switch>
+      </Router>
+      <Footer />
+    </Suspense>
   );
 }
 
