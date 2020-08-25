@@ -67,7 +67,7 @@ Program Synthesis
 
 ---
 ### Backend
-* Python 3 
+* Node v12.6.1
 
 1. Move into the project directory. 
 
@@ -81,7 +81,7 @@ Program Synthesis
     npm install 
     ```
 
-1. Create env file.
+1. Create .env file.
 
     ```
     MYSQL_HOST=localhost
@@ -100,7 +100,15 @@ Program Synthesis
     ```
     nodemon
     ```
-    
+---
+### Middle Fuction[Fault Localizer]
+* Python 3
+
+1. Tarantula
+
+    ```
+    python tarantula.py mid.py testCaseMid2
+    ```
 
 ## **Member**
 
