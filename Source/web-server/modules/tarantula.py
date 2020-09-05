@@ -308,13 +308,31 @@ def printToScreen_sum():
 # output.txt 에 결과 작성
 def exportToFile():
     file = open(outputFile, "w")
-    file.write(
-        'Line\tSuspiciousness\tRank\t' + str(tests[0]) + '\t' + str(tests[1]) + '\t' + str(tests[2]) + '\t' + str(
-            tests[3]) + '\t' + str(tests[4]) + '\t' + str(tests[5]) + '\n')
+
+    # write full
+    # file.write(
+    #     'Line\tSuspiciousness\tRank\t' + str(tests[0]) + '\t' + str(tests[1]) + '\t' + str(tests[2]) + '\t' + str(
+    #         tests[3]) + '\t' + str(tests[4]) + '\t' + str(tests[5]) + '\n')
+
+    # text = []
+    # for i in range(0, numLines):
+    #     text.append(str(lines[i].lineNo) + ' \t\t' + str(lines[i].score) + '  \t\t\t' + str(lines[i].rank) + '\t\t' + str(lines[i].text.rstrip()) + '\n')
+    # text.sort(key=lambda x: (int(re.search(r"\d+", x).group())))
+
+    # for i in range(0, numLines):
+    #     try:
+    #         file.write(text[i])
+    #     except IndexError:
+    #         continue
+
+    # file.write('\t\t\t\t\t\t\t\t' + str(results[tests[0]]) + '\t\t' + str(results[tests[1]]) + '\t\t' +
+    #             str(results[tests[2]]) + '\t\t' + str(results[tests[3]]) + '\t\t' + str(results[tests[4]]) + '\t\t' +
+    #             str(results[tests[5]]))
+    # file.close()
 
     text = []
     for i in range(0, numLines):
-        text.append(str(lines[i].lineNo) + ' \t\t' + str(lines[i].score) + '  \t\t\t' + str(lines[i].rank) + '\t\t' + str(lines[i].text.rstrip()) + '\n')
+        text.append(str(lines[i].text.rstrip())+ " # " + str(lines[i].score) + '\n')
     text.sort(key=lambda x: (int(re.search(r"\d+", x).group())))
 
     for i in range(0, numLines):
@@ -322,12 +340,9 @@ def exportToFile():
             file.write(text[i])
         except IndexError:
             continue
-
-    file.write('\t\t\t\t\t\t\t\t' + str(results[tests[0]]) + '\t\t' + str(results[tests[1]]) + '\t\t' +
-                str(results[tests[2]]) + '\t\t' + str(results[tests[3]]) + '\t\t' + str(results[tests[4]]) + '\t\t' +
-                str(results[tests[5]]))
     file.close()
     print("Detailed report exported to output.txt")
+
 
 
 ### Globals - appearing as the very incarnation of devil himself

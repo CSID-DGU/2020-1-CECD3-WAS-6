@@ -86,7 +86,7 @@ function EditorPage(props) {
                     setProcess(!process);
                     setTimeout( async () => {
                         let params = {
-                            selectLine: 10
+                            selectLine: selectLine
                         }
                         const response = await EditorAPI.modify(params);
                         const { data } = response;

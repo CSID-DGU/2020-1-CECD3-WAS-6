@@ -66,12 +66,18 @@ router.post('/compile', function(req, res, next){
         console.log(error)
     }
 })
-router.get('/modify', function(req, res, next){
+router.get('/modify', async function(req, res, next){
     const { selectLine } = req.query;
-    console.log(selectLine);
+    console.log(req)
+    console.log(selectLine);    
+    
+    const pathOutput = path.resolve(ROOT, 'output.txt');
+    const modifyCode = await tarantula.modifyLine(selectLine, pathOutput);
+
+    console.log(modifyCode)
     res.status(200).send({
         result: true,
-        data: "해당하는 라인 코드 출력함",
+        data: modifyCode,
         message: '컴파일 성공'
     })
 })  
