@@ -11,6 +11,7 @@
     "antd": "^4.5.0",
     "axios": "^0.19.2",
     "formik": "^2.1.5",
+    "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
     "node-sass": "^4.14.1",
     "query-string": "^6.13.1",

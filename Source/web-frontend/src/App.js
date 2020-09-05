@@ -22,10 +22,10 @@ function App() {
       <Header/>
         <Switch>
           
-        <Route exact path='/'     component={Auth(Dashboard, null)} />
-        <Route exact path='/signin' component={Auth(Login, false)} />
-        <Route exact path='/signup' component ={Auth(Register, false)} />
-        <Route exact path='/editor' component={Auth(Editor, null)} />
+          <Route exact path='/'     component={Auth(Dashboard, null)} />
+          <Route exact path='/signin' component={Auth(Login, false)} />
+          <Route exact path='/signup' component ={Auth(Register, false)} />
+          <Route exact path='/editor' component={Auth(Editor, null)} />
 
         <Route path ='*'>
           <Error/>

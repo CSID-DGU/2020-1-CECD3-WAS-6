@@ -5,7 +5,7 @@ import 'antd/dist/antd.css'
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-import store from './_reducers'
+import store from './_reducers';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware} from 'redux';
 import promiseMiddleware from 'redux-promise';

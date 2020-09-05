@@ -6,9 +6,9 @@ import { useSelector, useDispatch } from 'react-redux'
 export default function (ComposedClass, reload, adminRoute = null){
     function AuthenticationUser(props){
         let user = useSelector(state => state.user);
-        const dispath = useDispatch();
+        const dispatch = useDispatch();
         useEffect(() => {
-            dispath(auth())
+            dispatch(auth())
                 .then(response =>{
                     //로그인 안 하는상태
                     if(!response.payload.isAuth){
@@ -27,7 +27,7 @@ export default function (ComposedClass, reload, adminRoute = null){
                 }).catch(err => {
                     console.log(err)
                 })
-        },[dispath, props.history, user.googleAuth])
+        },[dispatch, props.history, user.googleAuth])
 
         return (
             <ComposedClass {...props} user={user} />

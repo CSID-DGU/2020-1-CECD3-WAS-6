@@ -13,7 +13,6 @@ async function authorizationAPI(req, res, next){
     }else{
         res.status(401).send('Access Denied')
     }
-    
     try{
         const verified = jwt.verify(authToken, process.env.TOKEN);
         req.user = verified;

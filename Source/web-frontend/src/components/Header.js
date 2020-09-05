@@ -24,7 +24,6 @@ function Header(props) {
             console.log('Log out failed, please do again')
         }
     }
-    console.log()
     return (
         <Wrrapper className="menu">
             <ul>
