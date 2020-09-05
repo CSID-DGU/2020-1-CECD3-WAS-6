@@ -55,30 +55,62 @@ function EditorPage(props) {
 
 
     const [process, setProcess] = useState('false');
-    const [selectLine, setSelectLine] = useState();
+    const [selectLine, setSelectLine] = useState(0);
     const [step, setStep] = useState(0);
 
     const onSubmit = async () => {
 
-        setProcess(!process);
         
-        const params = {
-            code: codeContent ? codeContent : sampleCode["c"],
-            testCase: testCaseContent ? testCaseContent : sampleTestCase["base"],
-            selectLine: selectLine
+        switch (step) {
+            case 0:
+                setProcess(!process);
+                setTimeout( async () => {
+                    let params = {
+                        code: codeContent ? codeContent : sampleCode["c"],
+                        testCase: testCaseContent ? JSON.stringify(testCaseContent) : JSON.stringify(sampleTestCase["base"])
+                    }
+                    const response = await EditorAPI.compile(params);
+                    const { data } = response;
+                    
+                    setContentEditor2(data);
+
+                    setProcess(true);
+                    let nextStep = step + 1;
+                    setStep(nextStep);
+
+                }, 1000);
+                break;
+            case 1:
+                if(selectLine !== 0)
+                {
+                    setProcess(!process);
+                    setTimeout( async () => {
+                        let params = {
+                            selectLine: 10
+                        }
+                        const response = await EditorAPI.modify(params);
+                        const { data } = response;
+                        
+                        setContentEditor2(data);
+    
+                        setProcess(true);
+                        let nextStep = step + 1;
+                        setStep(nextStep);
+    
+                    }, 1000);
+                }else{
+                    alert("수정한 라인을 선택하세요")
+                }
+                break;
+            case 2:
+                window.location.reload();
+                break;  
+            default:
+                alert("입력한 값을 다시 확인하여 클릭 하세요")
+                break;
         }
-        const response = await EditorAPI.compile(params);
-        const { data } = response;
 
-        setContentEditor2(data);
-
-        setTimeout(() => {
-            setProcess(true);
-            let nextStep = step + 1;
-            console.log(nextStep)
-            setStep(nextStep);
-            // alert("구현중입니다....^^!")
-        }, 1000);
+        
     }
 
     const options = {
@@ -142,7 +174,7 @@ function EditorPage(props) {
                 }
             </Col>
             <Col xs={0} sm={4} md={3} lg={2} style={{background: ''}}>
-                <Button type="primary" style={{width:'100%'}} onClick = {onSubmit}> Run </Button>
+                <Button type={ step === 2 ? "danger" : "primary"} style={{width:'100%'}} onClick = {onSubmit}> { step === 2 ? "Reset" : "Run"} </Button>
                 {
                     !process && <ProcessLoading /> 
                 }

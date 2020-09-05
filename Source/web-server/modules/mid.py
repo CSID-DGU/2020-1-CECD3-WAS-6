@@ -1,5 +1,4 @@
-export default {
-    "c": `def mid(x,y,z):
+def mid(x,y,z):
 	m = z
 	if (y<z):
 		if(x<y):
@@ -11,5 +10,4 @@ export default {
 			m = y
 		elif (x>z):
 			m = x
-	return m`
-}
+	return m

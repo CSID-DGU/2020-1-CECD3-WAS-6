@@ -225,7 +225,7 @@ def file_len(fname):
 def makeListOfAllLines_tarantula():
     for i in range(len(lines_tarantula)):
         try:
-            lines_tarantula[i].setScore(scoreList_tarantula[i])
+            lines_tarantula[list_num[i]-1].setScore(scoreList_tarantula[i])
             lines_tarantula[i].setRank(ranked_tarantula[i + 1])
         except IndexError:
             continue
@@ -233,7 +233,7 @@ def makeListOfAllLines_tarantula():
 def makeListOfAllLines_ochiai():
     for i in range(len(lines_ochiai)):
         try:
-            lines_ochiai[i].setScore(scoreList_ochiai[i])
+            lines_ochiai[list_num[i]-1].setScore(scoreList_ochiai[i])
             lines_ochiai[i].setRank(ranked_ochiai[i + 1])
         except IndexError:
             continue
@@ -241,7 +241,7 @@ def makeListOfAllLines_ochiai():
 def makeListOfAllLines_op2():
     for i in range(len(lines_op2)):
         try:
-            lines_op2[i].setScore(scoreList_op2[i])
+            lines_op2[list_num[i]-1].setScore(scoreList_op2[i])
             lines_op2[i].setRank(ranked_op2[i + 1])
         except IndexError:
             continue
@@ -249,7 +249,7 @@ def makeListOfAllLines_op2():
 def makeListOfAllLines_barinel():
     for i in range(len(lines_barinel)):
         try:
-            lines_barinel[i].setScore(scoreList_barinel[i])
+            lines_barinel[list_num[i]-1].setScore(scoreList_barinel[i])
             lines_barinel[i].setRank(ranked_barinel[i + 1])
         except IndexError:
             continue
@@ -257,7 +257,7 @@ def makeListOfAllLines_barinel():
 def makeListOfAllLines_sum():
     for i in range(len(lines_sum)):
         try:
-            lines_sum[i].setScore(scoreList_sum[i])
+            lines_sum[list_num[i]-1].setScore(scoreList_sum[i])
             lines_sum[i].setRank(ranked_sum[i + 1])
         except IndexError:
             continue
@@ -394,9 +394,11 @@ suspiciousness_barinel = {}
 scoreList_barinel = []
 suspiciousness_sum = {}
 scoreList_sum = []
+list_num = []
 
+# list(lineToTest) 순서 문제 2.7에서는 순서대로인게 3.7에서는 순서 섞임
 for k in list(lineToTest):
-    print(k)
+    list_num.append(k)
     # tarantula
     try:
         score = scores_tarantula(k)   # 의심도 계산 알고리즘 적용하는 곳
