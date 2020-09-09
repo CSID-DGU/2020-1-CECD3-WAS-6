@@ -1,13 +1,13 @@
-def mid(x,y,z): # 0.31
-	m = z # 0.31
-	if (y<z): # 0.31
-		if(x<y): # 0.469
-			m = y # 0.0
+def mid(x,y,z):
+	m = z
+	if (y<z):
+		if(x<y):
+			m = y
 		elif (x<z): # 0.573
 			m = y # 0.718
-	else: # 0.0
-		if(x>y): # 0.0
-			m = y # 0.0
-		elif (x>z): # 0.0
-			m = x # 0.0
-	return m # 0.31
+	else:
+		if(x>y):
+			m = y
+		elif (x>z):
+			m = x
+	return m

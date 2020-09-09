@@ -34,10 +34,11 @@ router.post('/compile', function(req, res, next){
         python.on('close', (code) => {
             // console.log(`child process close all stdio with code ${code}`);
             const outputCode = fs.readFileSync(pathOutput, {encoding: 'utf-8', flag: 'r'})
-            res.status(200).send({
-            result: true,
-            data: outputCode,
-            message: '컴파일 성공'
+                console.log(outputCode)
+                res.status(200).send({
+                result: true,
+                data: outputCode,
+                message: '컴파일 성공'
             })
         });
         // console.on("close", emitFinish(socket));
@@ -68,13 +69,10 @@ router.post('/compile', function(req, res, next){
 })
 router.get('/modify', async function(req, res, next){
     const { selectLine } = req.query;
-    console.log(req)
-    console.log(selectLine);    
     
     const pathOutput = path.resolve(ROOT, 'output.txt');
     const modifyCode = await tarantula.modifyLine(selectLine, pathOutput);
 
-    console.log(modifyCode)
     res.status(200).send({
         result: true,
         data: modifyCode,

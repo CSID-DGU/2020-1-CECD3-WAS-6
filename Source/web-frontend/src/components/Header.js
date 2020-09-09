@@ -17,7 +17,6 @@ function Header(props) {
 
     const logoutHandler = async () => {
         const request = await userAPI.logOutUser();
-        localStorage.removeItem("token")
         if(request.result){
             props.history.push("/signup");
         }else{
@@ -28,12 +27,12 @@ function Header(props) {
         <Wrrapper className="menu">
             <ul>
                 <li className="logo">
-                    <img src= {Images.logoImage} />
+                    <img src= {Images.logoImage}  onClick={() => props.history.push("/")} />
                 </li>
                 <li><Link to="/work"><i className="fa fa-cogs"></i>how it works</Link></li>
                 <li><Link to="/plans"><i className="fa fa-map-o"></i>future plans</Link></li>
                 <li><Link to="/about"><i className="fa fa-group"></i>about us</Link></li>
-                <li><Link to="/github"><i className="fa fa-github-square"></i>github</Link></li>
+                <li><a href="https://github.com/CSID-DGU/2020-1-CECD3-WAS-6" target="_blank"><i className="fa fa-github-square"></i>github</a></li>
                 {
                     user.userData && !user.userData.isAuth ?
                     <>

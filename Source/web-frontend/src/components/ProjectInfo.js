@@ -7,11 +7,13 @@ function ProjectInfo(props) {
         <Wrraper>
             <h3>what is project?</h3>
                 <p className="app-page-content">
-                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
-                when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap 
-                into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum 
-                passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-            </p>
+                Hello! Everyone, This project is about an Automated Debugger which automatically find lines of erroneous code and correct them
+                satisfying given specification. The debugger made of some techniques. First technique that we use is Fault Localization. 
+                This technique find lines that is likely to occur fault in execution. To be specific, in our project, 
+                we implements Coverage-based Fault Localization. Also, The Fault Localization calculates suspiciouness of error-prone code with some 
+                formulas such as Tarantula, Ochiai, etc. Second, Program Synthesis is one of automated programming and generates code that satisfies given specification. 
+                In this project, this technique corrects error code which is specified by Fault Localization. As a result, this system will be served as a web application.
+                </p>
         </Wrraper>
     )
 }

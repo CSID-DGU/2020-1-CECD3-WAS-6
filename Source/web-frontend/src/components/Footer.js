@@ -5,7 +5,7 @@ import styled from 'styled-components'
 function Footer(props) {
     return (
         <Wrapper>
-            <p> develop by was team of dongguk uni.</p>
+            <p> Developed by WAS Team, Dongguk univ.</p>
         </Wrapper>
     )
 }
@@ -14,8 +14,10 @@ const Wrapper = styled.div`
     bottom: 0px;
     width: 100%;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     p{
-        text-transform: capitalize;
         color: #fff;
     }
 

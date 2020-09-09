@@ -332,9 +332,16 @@ def exportToFile():
 
     text = []
     for i in range(0, numLines):
-        text.append(str(lines[i].text.rstrip())+ " # " + str(lines[i].score) + '\n')
-    text.sort(key=lambda x: (int(re.search(r"\d+", x).group())))
+        try:
+            score = float(lines[i].score)
+            if score > 0.5:
+                text.append(str(lines[i].text.rstrip())+ " # " + str(lines[i].score) + '\n')
+            else:
+                text.append(str(lines[i].text.rstrip())+ '\n')
+        except IndexError as ValueError:
+            print (ValueError)    
 
+    # text.sort(key=lambda x: (int(re.search(r"\d+", x).group())))
     for i in range(0, numLines):
         try:
             file.write(text[i])
