@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Row, Col, Button } from 'antd'
-import { UploadOutlined } from '@ant-design/icons'
+import { IdcardFilled, UploadOutlined } from '@ant-design/icons'
 import Editor from "@monaco-editor/react";
 import Images from '../../contans/Image'
 import SourceEditor from './components/SourceEditor'
@@ -119,13 +119,20 @@ function EditorPage(props) {
     };
 
     useEffect(() => {
-        $(".modified ").on('dblclick',".view-line",function (event) {
+        $(".modified ").on('dblclick',"div.view-line",function (event) {
             Array.from(document.querySelectorAll(".modified .view-line"))
                 .forEach(function(val) {
                     val.style.background="transparent";
             });
             var target = event.target;
-            target.style.background = "blue";
+            console.log(event.target.nodeName)
+            console.log(event.currentTarget.nodeName)
+
+            if(event.target.nodeName === "DIV")
+                target.style.background = "blue";
+            else    
+                target.parentNode.parentNode.style.background = "blue";
+
             var line = (Number(target.style.top.replace(/[^0-9]/g, '')) / 19 ) + 1;
             setSelectLine(line)
         })
@@ -223,7 +230,6 @@ const Wrapper = styled.div`
                 cursor: pointer;
             }
         }
-    
         .file-list{
             border-right: 2px solid #fff;
             height: 100%;
@@ -254,6 +260,13 @@ const Wrapper = styled.div`
             }
         }
     
+        /* .original .view-line, .line-numbers{
+                background: #1E1E1E ;
+        }
+        .cldr{
+            z-index: 10;
+            background: #1E1E1E;
+        } */
         .line-numbers{
             /* background: red; */
             z-index: 99 !important;

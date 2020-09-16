@@ -334,7 +334,7 @@ def exportToFile():
     for i in range(0, numLines):
         try:
             score = float(lines[i].score)
-            if score > 0.5:
+            if score >= 0.5:
                 text.append(str(lines[i].text.rstrip())+ " # " + str(lines[i].score) + '\n')
             else:
                 text.append(str(lines[i].text.rstrip())+ '\n')

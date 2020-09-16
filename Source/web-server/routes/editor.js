@@ -34,7 +34,6 @@ router.post('/compile', function(req, res, next){
         python.on('close', (code) => {
             // console.log(`child process close all stdio with code ${code}`);
             const outputCode = fs.readFileSync(pathOutput, {encoding: 'utf-8', flag: 'r'})
-                console.log(outputCode)
                 res.status(200).send({
                 result: true,
                 data: outputCode,
