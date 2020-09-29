@@ -108,8 +108,10 @@ def rank(lineToTest):
 
 
 ################################scores = 의심도 계산###################
-# tarantula
-def scores_tarantula(line):
+def passfail(line):
+    global failed
+    global passed
+
     if len(tests[0]) == 1:
         uni = list(set([tuple(set(item)) for item in lineToTest[line]]))
         cases = uni
@@ -122,62 +124,36 @@ def scores_tarantula(line):
             passed += 1
         else:
             failed += 1
+
+# tarantula
+def scores_tarantula():
     suspiciousness = (failed / totalFailed) / ((passed / totalPassed) + (failed / totalFailed))
     return round(suspiciousness, 3)
 
 # ochiai
-def scores_ochiai(line):
-    if len(tests[0]) == 1:
-        uni = list(set([tuple(set(item)) for item in lineToTest[line]]))
-        cases = uni
-    else:
-        cases = lineToTest[line]
-    failed = 0
-    passed = 0
-    for l in cases:
-        if results[l]:
-            passed += 1
-        else:
-            failed += 1
+def scores_ochiai():
     suspiciousness = (failed) / ((totalFailed*(failed + passed))**0.5)
     return round(suspiciousness, 3)
 
 # op2
-def scores_op2(line):
-    if len(tests[0]) == 1:
-        uni = list(set([tuple(set(item)) for item in lineToTest[line]]))
-        cases = uni
-    else:
-        cases = lineToTest[line]
-    failed = 0
-    passed = 0
-    for l in cases:
-        if results[l]:
-            passed += 1
-        else:
-            failed += 1
-    suspiciousness = failed - (passed) / (totalPassed + 1)
-    # if suspiciousness < 0:
-    #     suspiciousness = 0
-    # if suspiciousness > 1.0:
-    #     suspiciousness = 1.0
+# def scores_op2():
+#     suspiciousness = failed - (passed) / (totalPassed + 1)
+#     return round(suspiciousness, 3)
+
+# barinel = SBI
+# SBI : suspiciousness = 1 - float((passed)) / float((passed + failed))
+def scores_barinel():
+    suspiciousness = 1 - float((passed)) / float((passed + failed))
     return round(suspiciousness, 3)
 
-# barinel
-def scores_barinel(line):
-    if len(tests[0]) == 1:
-        uni = list(set([tuple(set(item)) for item in lineToTest[line]]))
-        cases = uni
-    else:
-        cases = lineToTest[line]
-    failed = 0
-    passed = 0
-    for l in cases:
-        if results[l]:
-            passed += 1
-        else:
-            failed += 1
-    suspiciousness = 1 - float((passed)) / float((passed + failed))
+# jaccard
+def scores_jaccard():
+    suspiciousness = (failed) / (totalFailed + passed)
+    return round(suspiciousness, 3)
+
+# AMPLE
+def scores_AMPLE():
+    suspiciousness = abs((failed / totalFailed)-(passed / totalPassed))
     return round(suspiciousness, 3)
 
 #########################################################################
@@ -217,8 +193,10 @@ def file_len(fname):
             lines.append(line)
             lines_tarantula.append(line)
             lines_ochiai.append(line)
-            lines_op2.append(line)
+            # lines_op2.append(line)
             lines_barinel.append(line)
+            lines_jaccard.append(line)
+            lines_AMPLE.append(line)
             lines_sum.append(line)
     return i + 1
 
@@ -240,19 +218,35 @@ def makeListOfAllLines_ochiai():
         except IndexError:
             continue
 
-def makeListOfAllLines_op2():
-    for i in range(len(lines_op2)):
-        try:
-            lines_op2[list_num[i]-1].setScore(scoreList_op2[i])
-            lines_op2[i].setRank(ranked_op2[i + 1])
-        except IndexError:
-            continue
+# def makeListOfAllLines_op2():
+#     for i in range(len(lines_op2)):
+#         try:
+#             lines_op2[list_num[i]-1].setScore(scoreList_op2[i])
+#             lines_op2[i].setRank(ranked_op2[i + 1])
+#         except IndexError:
+#             continue
 
 def makeListOfAllLines_barinel():
     for i in range(len(lines_barinel)):
         try:
             lines_barinel[list_num[i]-1].setScore(scoreList_barinel[i])
             lines_barinel[i].setRank(ranked_barinel[i + 1])
+        except IndexError:
+            continue
+
+def makeListOfAllLines_jaccard():
+    for i in range(len(lines_jaccard)):
+        try:
+            lines_jaccard[list_num[i]-1].setScore(scoreList_jaccard[i])
+            lines_jaccard[i].setRank(ranked_jaccard[i + 1])
+        except IndexError:
+            continue
+
+def makeListOfAllLines_AMPLE():
+    for i in range(len(lines_AMPLE)):
+        try:
+            lines_AMPLE[list_num[i]-1].setScore(scoreList_AMPLE[i])
+            lines_AMPLE[i].setRank(ranked_AMPLE[i + 1])
         except IndexError:
             continue
 
@@ -263,6 +257,7 @@ def makeListOfAllLines_sum():
             lines_sum[i].setRank(ranked_sum[i + 1])
         except IndexError:
             continue
+
 ##############################################################
 
 def removeKachra():
@@ -287,17 +282,29 @@ def printToScreen_ochiai():
     for i in range(min(10, numLines)):
         print(lines_ochiai[i].lineNo, '\t', lines_ochiai[i].score, '  ', '\t','\t', lines_ochiai[i].rank, '\t', lines_ochiai[i].text.rstrip())
 
-def printToScreen_op2():
-    print("Top 10 most suspicious lines")
-    print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
-    for i in range(min(10, numLines)):
-        print(lines_op2[i].lineNo, '\t', lines_op2[i].score, '  ', '\t','\t', lines_op2[i].rank, '\t', lines_op2[i].text.rstrip())
+# def printToScreen_op2():
+#     print("Top 10 most suspicious lines")
+#     print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
+#     for i in range(min(10, numLines)):
+#         print(lines_op2[i].lineNo, '\t', lines_op2[i].score, '  ', '\t','\t', lines_op2[i].rank, '\t', lines_op2[i].text.rstrip())
 
 def printToScreen_barinel():
     print("Top 10 most suspicious lines")
     print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
     for i in range(min(10, numLines)):
         print(lines_barinel[i].lineNo, '\t', lines_barinel[i].score, '  ', '\t','\t', lines_barinel[i].rank, '\t', lines_barinel[i].text.rstrip())
+
+def printToScreen_jaccard():
+    print("Top 10 most suspicious lines")
+    print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
+    for i in range(min(10, numLines)):
+        print(lines_jaccard[i].lineNo, '\t', lines_jaccard[i].score, '  ', '\t','\t', lines_jaccard[i].rank, '\t', lines_jaccard[i].text.rstrip())
+
+def printToScreen_AMPLE():
+    print("Top 10 most suspicious lines")
+    print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
+    for i in range(min(10, numLines)):
+        print(lines_AMPLE[i].lineNo, '\t', lines_AMPLE[i].score, '  ', '\t','\t', lines_AMPLE[i].rank, '\t', lines_AMPLE[i].text.rstrip())
 
 def printToScreen_sum():
     print("Top 10 most suspicious lines")
@@ -348,8 +355,10 @@ totalFailed = 0.0
 lines = []
 lines_tarantula = []
 lines_ochiai = []
-lines_op2 = []
+# lines_op2 = []
 lines_barinel = []
+lines_jaccard = []
+lines_AMPLE = []
 lines_sum = []
 testCode = []
 testCaseResuts = []
@@ -388,10 +397,14 @@ suspiciousness_tarantula = {}
 scoreList_tarantula = []
 suspiciousness_ochiai = {}
 scoreList_ochiai = []
-suspiciousness_op2 = {}
-scoreList_op2 = []
+# suspiciousness_op2 = {}
+# scoreList_op2 = []
 suspiciousness_barinel = {}
 scoreList_barinel = []
+suspiciousness_jaccard = {}
+scoreList_jaccard = []
+suspiciousness_AMPLE = {}
+scoreList_AMPLE = []
 suspiciousness_sum = {}
 scoreList_sum = []
 list_num = []
@@ -399,9 +412,10 @@ list_num = []
 
 for k in list(lineToTest):
     list_num.append(k)
+    passfail(k)
     # tarantula
     try:
-        score = scores_tarantula(k)   # 의심도 계산 알고리즘 적용하는 곳
+        score = scores_tarantula()   # 의심도 계산 알고리즘 적용하는 곳
         scoreList_tarantula.append(score)
     except:
         score = 0.0
@@ -414,7 +428,7 @@ for k in list(lineToTest):
 
     # ochiai
     try:
-        score = scores_ochiai(k)   # 의심도 계산 알고리즘 적용하는 곳
+        score = scores_ochiai()   # 의심도 계산 알고리즘 적용하는 곳
         scoreList_ochiai.append(score)
     except:
         score = 0.0
@@ -426,21 +440,21 @@ for k in list(lineToTest):
             suspiciousness_ochiai[score] = [k]
 
     # op2
-    try:
-        score = scores_op2(k)   # 의심도 계산 알고리즘 적용하는 곳
-        scoreList_op2.append(score)
-    except:
-        score = 0.0
-        scoreList_op2.append(score)
-    finally:
-        if score in suspiciousness_op2.keys():
-            suspiciousness_op2[score].append(k)
-        else:
-            suspiciousness_op2[score] = [k]
+    # try:
+    #     score = scores_op2()   # 의심도 계산 알고리즘 적용하는 곳
+    #     scoreList_op2.append(score)
+    # except:
+    #     score = 0.0
+    #     scoreList_op2.append(score)
+    # finally:
+    #     if score in suspiciousness_op2.keys():
+    #         suspiciousness_op2[score].append(k)
+    #     else:
+    #         suspiciousness_op2[score] = [k]
 
     # barinel
     try:
-        score = scores_barinel(k)   # 의심도 계산 알고리즘 적용하는 곳
+        score = scores_barinel()   # 의심도 계산 알고리즘 적용하는 곳
         scoreList_barinel.append(score)
     except:
         score = 0.0
@@ -451,9 +465,35 @@ for k in list(lineToTest):
         else:
             suspiciousness_barinel[score] = [k]
 
+    # jaccard
+    try:
+        score = scores_jaccard()   # 의심도 계산 알고리즘 적용하는 곳
+        scoreList_jaccard.append(score)
+    except:
+        score = 0.0
+        scoreList_jaccard.append(score)
+    finally:
+        if score in suspiciousness_jaccard.keys():
+            suspiciousness_jaccard[score].append(k)
+        else:
+            suspiciousness_jaccard[score] = [k]
+
+    # AMPLE
+    try:
+        score = scores_AMPLE()   # 의심도 계산 알고리즘 적용하는 곳
+        scoreList_AMPLE.append(score)
+    except:
+        score = 0.0
+        scoreList_AMPLE.append(score)
+    finally:
+        if score in suspiciousness_AMPLE.keys():
+            suspiciousness_AMPLE[score].append(k)
+        else:
+            suspiciousness_AMPLE[score] = [k]
+
     # sum
     try:
-        score = (scores_tarantula(k) + scores_ochiai(k) + scores_op2(k) + scores_barinel(k)) / 4
+        score = (scores_tarantula() + scores_ochiai() + scores_barinel() + scores_jaccard() + scores_AMPLE()) / 5
         score = round(score, 3)
         scoreList_sum.append(score)
     except:
@@ -480,12 +520,12 @@ lines_ochiai.sort()
 print('\nochiai')
 printToScreen_ochiai()
 
-ranked_op2 = rank(suspiciousness_op2)
-makeListOfAllLines_op2()
-removeKachra()
-lines_op2.sort()
-print('\nop2')
-printToScreen_op2()
+# ranked_op2 = rank(suspiciousness_op2)
+# makeListOfAllLines_op2()
+# removeKachra()
+# lines_op2.sort()
+# print('\nop2')
+# printToScreen_op2()
 
 ranked_barinel = rank(suspiciousness_barinel)
 makeListOfAllLines_barinel()
@@ -493,6 +533,20 @@ removeKachra()
 lines_barinel.sort()
 print ('\nbarinel')
 printToScreen_barinel()
+
+ranked_jaccard = rank(suspiciousness_jaccard)
+makeListOfAllLines_jaccard()
+removeKachra()
+lines_jaccard.sort()
+print ('\njaccard')
+printToScreen_jaccard()
+
+ranked_AMPLE = rank(suspiciousness_AMPLE)
+makeListOfAllLines_AMPLE()
+removeKachra()
+lines_AMPLE.sort()
+print ('\nAMPLE')
+printToScreen_AMPLE()
 
 ranked_sum = rank(suspiciousness_sum)
 makeListOfAllLines_sum()
