@@ -15,7 +15,6 @@ function SourceEditor({listFile, fileHandler}) {
         codeFile.click();
         codeFile.onchange = fileHandler;
     }
-
     return (
         <Wrraper className="file-list">
             <label style={{paddingLeft: '5px',fontSize: '20px'}}>Files</label>
@@ -26,11 +25,15 @@ function SourceEditor({listFile, fileHandler}) {
                 {
                     listFile.length !== 0 ?
                         listFile.map((item, idx) => (
-                            <li><img src = {Images.cImage}/>{item.name}</li>
+                            <li><img src =
+                            {
+                                item.name.includes(".c") ? Images.cImage : item.name.includes(".cpp") ? Images.cppImage : Images.pyImage
+                            }
+                            />{item.name}</li>
                         )) :
-                    <li><img src = {Images.cImage}/>main.c</li>
+                    <li><img src = {Images.pyImage}/>main.py</li>
                 }
-            </ul>
+            </ul> 
         </Wrraper>
     )
 }

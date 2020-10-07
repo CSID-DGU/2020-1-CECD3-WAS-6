@@ -10,8 +10,8 @@ router.post('/compile', function(req, res, next){
     try {
         const { code, testCase } = req.body;
         
-        const pathSource = path.resolve(ROOT, 'mid.py');
-        const pathTestCase = path.resolve(ROOT, 'testCaseMid2');
+        const pathSource = path.resolve(ROOT, 'gcd.py');
+        const pathTestCase = path.resolve(ROOT, 'testcase');
         const pathOutput = path.resolve(ROOT, 'output.txt');
 
         fs.writeFileSync(pathSource, code ,function(err) {
@@ -22,14 +22,8 @@ router.post('/compile', function(req, res, next){
             if(err) return console.error('Test Case write error' + err);
         })
         
-        const python = tarantula.compileTarantula(pathSource, pathTestCase);
+        const python = tarantula.compileTarantula();
         
-        // let codeToSend;
-        // function emitter(data) {
-        //     codeToSend = data;
-        // }
-        // python.stdout.on("data", emitter);
-        // python.stderr.on("data", emitter);
 
         python.on('close', (code) => {
             // console.log(`child process close all stdio with code ${code}`);
@@ -40,27 +34,6 @@ router.post('/compile', function(req, res, next){
                 message: '컴파일 성공'
             })
         });
-        // console.on("close", emitFinish(socket));
-
-    //     const codeConvert = `def mid(x,y,z):
-    //     m = z
-    //     if (y<z):       0.9 
-    //         if(x<y):    0.5 
-    //             m = y   0.2
-    //         elif (x<z): 0.6
-    //             m = y
-    //     else:
-    //         if(x>y):    0.5
-    //             m = y
-    //         elif (x>z):
-    //             m = x
-    //     return m
-    // `;
-    //     res.status(200).send({
-    //         result: true,
-    //         data: codeConvert,
-    //         message: '컴파일 성공'
-    //     })
         
     } catch (error) {
         console.log(error)

@@ -16,7 +16,5 @@ const Wrraper = styled.div`
     align-content: center;
     justify-content: center;
 `
-
-
 export default ProcessLoading
 

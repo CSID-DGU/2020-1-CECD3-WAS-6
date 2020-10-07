@@ -1,5 +1,4 @@
-export default {
-    "python": `def gcd(a,b):
+def gcd(a,b):
     if(a<0):
         a = -a
     if(b<0):
@@ -13,5 +12,4 @@ export default {
             a = a - 1   
         else:
             b = b - a
-    return a`	
-}
+    return a

@@ -5,11 +5,13 @@ const path = require('path')
 
 const ROOT = process.env.ROOT;
 
-function compileTarantula(pathCourse, pathTestCase){
-    console.log(pathCourse)
-    console.log(pathTestCase)
-    let python = spawn("python", ['tarantula.py' , 'mid.py', 'testCaseMid2'], {cwd: ROOT });
-    return python;
+function compileTarantula(){
+    try {
+        let python = spawn("python", ['tarantula.py' , 'gcd.py', 'testcase'], {cwd: ROOT });
+        return python;
+    } catch (error) {
+        console.log(error)        
+    }
 }
 function modifyLine(selectLine, pathOutputFile)
 {
@@ -22,12 +24,13 @@ function modifyLine(selectLine, pathOutputFile)
         let lineNumber = 0;
         let code = "";
 
-        rl.on('line', function(line) {
+        rl.on('line', function(line, linecount) {
             lineNumber++;
             if(lineNumber === Number(selectLine))
             {
-                line = line + "select line";
+                line = line + " select line";
             }
+            console.log(linecount)
             code = code + line + "\n";
         });
     

@@ -9,8 +9,10 @@ import importlib
 import re
 from optparse import OptionParser
 
+
 # 테스트할 코드의 각 라인에 대한 정보를 담을 클래스
 from sympy import subfactorial
+
 
 class Line:
     def __init__(self, score=0.0, rank=0, text="", lineNo=0):
@@ -106,22 +108,13 @@ def rank(lineToTest):
 
 
 ################################scores = 의심도 계산###################
-def passfail(line):
-    global failed
-    global passed
-
-    # 테스트케이스 변수 하나일 경우
+# tarantula
+def scores_tarantula(line):
     if len(tests[0]) == 1:
         uni = list(set([tuple(set(item)) for item in lineToTest[line]]))
         cases = uni
-    # 그 외의 경우
     else:
         cases = lineToTest[line]
-    
-    # for, while 커버리지 중복 제거
-    remove_dup = list(set(map(tuple, cases)))
-    cases = remove_dup
-
     failed = 0
     passed = 0
     for l in cases:
@@ -129,31 +122,60 @@ def passfail(line):
             passed += 1
         else:
             failed += 1
-
-# tarantula
-def scores_tarantula():
     suspiciousness = (failed / totalFailed) / ((passed / totalPassed) + (failed / totalFailed))
     return round(suspiciousness, 3)
 
 # ochiai
-def scores_ochiai():
+def scores_ochiai(line):
+    if len(tests[0]) == 1:
+        uni = list(set([tuple(set(item)) for item in lineToTest[line]]))
+        cases = uni
+    else:
+        cases = lineToTest[line]
+    failed = 0
+    passed = 0
+    for l in cases:
+        if results[l]:
+            passed += 1
+        else:
+            failed += 1
     suspiciousness = (failed) / ((totalFailed*(failed + passed))**0.5)
     return round(suspiciousness, 3)
 
-# barinel = SBI
-# SBI : suspiciousness = 1 - float((passed)) / float((passed + failed))
-def scores_barinel():
+# op2
+def scores_op2(line):
+    if len(tests[0]) == 1:
+        uni = list(set([tuple(set(item)) for item in lineToTest[line]]))
+        cases = uni
+    else:
+        cases = lineToTest[line]
+    failed = 0
+    passed = 0
+    for l in cases:
+        if results[l]:
+            passed += 1
+        else:
+            failed += 1
+    suspiciousness = failed - (passed) / (totalPassed + 1)
+    if suspiciousness < 0:
+        suspiciousness = 0
+    return round(suspiciousness, 3)
+
+# barinel
+def scores_barinel(line):
+    if len(tests[0]) == 1:
+        uni = list(set([tuple(set(item)) for item in lineToTest[line]]))
+        cases = uni
+    else:
+        cases = lineToTest[line]
+    failed = 0
+    passed = 0
+    for l in cases:
+        if results[l]:
+            passed += 1
+        else:
+            failed += 1
     suspiciousness = 1 - float((passed)) / float((passed + failed))
-    return round(suspiciousness, 3)
-
-# jaccard
-def scores_jaccard():
-    suspiciousness = (failed) / (totalFailed + passed)
-    return round(suspiciousness, 3)
-
-# AMPLE
-def scores_AMPLE():
-    suspiciousness = abs((failed / totalFailed)-(passed / totalPassed))
     return round(suspiciousness, 3)
 
 #########################################################################
@@ -188,21 +210,14 @@ def traceit(frame, event, arg):
 def file_len(fname):
     with open(fname) as f:
         for i, l in enumerate(f):
-            line = Line(0.0, 0, l, i + 1)   # Line 클래스 변수 할당, 테스트코드의 text 와 lineno
-            line_tarantula = Line(0.0, 0, l, i + 1)
-            line_ochiai = Line(0.0, 0, l, i + 1)
-            line_barinel = Line(0.0, 0, l, i + 1)
-            line_jaccard = Line(0.0, 0, l, i + 1)
-            line_AMPLE = Line(0.0, 0, l, i + 1)
-            line_sum = Line(0.0, 0, l, i + 1)
+            line = Line(0.0, 0, l, i + 1)   # Line 클래스 변수 할당, mid.py 의 text 와 lineno
             testCode.append(l)
             lines.append(line)
-            lines_tarantula.append(line_tarantula)
-            lines_ochiai.append(line_ochiai)
-            lines_barinel.append(line_barinel)
-            lines_jaccard.append(line_jaccard)
-            lines_AMPLE.append(line_AMPLE)
-            lines_sum.append(line_sum)
+            lines_tarantula.append(line)
+            lines_ochiai.append(line)
+            lines_op2.append(line)
+            lines_barinel.append(line)
+            lines_sum.append(line)
     return i + 1
 
 
@@ -223,27 +238,19 @@ def makeListOfAllLines_ochiai():
         except IndexError:
             continue
 
+def makeListOfAllLines_op2():
+    for i in range(len(lines_op2)):
+        try:
+            lines_op2[list_num[i]-1].setScore(scoreList_op2[i])
+            lines_op2[i].setRank(ranked_op2[i + 1])
+        except IndexError:
+            continue
+
 def makeListOfAllLines_barinel():
     for i in range(len(lines_barinel)):
         try:
             lines_barinel[list_num[i]-1].setScore(scoreList_barinel[i])
             lines_barinel[i].setRank(ranked_barinel[i + 1])
-        except IndexError:
-            continue
-
-def makeListOfAllLines_jaccard():
-    for i in range(len(lines_jaccard)):
-        try:
-            lines_jaccard[list_num[i]-1].setScore(scoreList_jaccard[i])
-            lines_jaccard[i].setRank(ranked_jaccard[i + 1])
-        except IndexError:
-            continue
-
-def makeListOfAllLines_AMPLE():
-    for i in range(len(lines_AMPLE)):
-        try:
-            lines_AMPLE[list_num[i]-1].setScore(scoreList_AMPLE[i])
-            lines_AMPLE[i].setRank(ranked_AMPLE[i + 1])
         except IndexError:
             continue
 
@@ -254,115 +261,95 @@ def makeListOfAllLines_sum():
             lines_sum[i].setRank(ranked_sum[i + 1])
         except IndexError:
             continue
+##############################################################
+
+def removeKachra():
+    toDelete = []
+    for j in lines:
+        if j.rank == 0:
+            toDelete.append(j)
+    for obj in toDelete:
+        lines.remove(obj)
+
 
 # console 에 결과 print #################################
 def printToScreen_tarantula():
     print("Top 10 most suspicious lines")
     print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
     for i in range(min(10, numLines)):
-        print(lines_tarantula[i].lineNo, '\t', lines_tarantula[i].score, '  ', '\t','\t', lines_tarantula[i].rank, '\t', lines_tarantula[i].text.rstrip())
+        print(lines_tarantula[i].lineNo, '\t', lines_tarantula[i].score, '\t', '\t', lines_tarantula[i].rank, '\t', lines_tarantula[i].text.rstrip())
 
 def printToScreen_ochiai():
     print("Top 10 most suspicious lines")
     print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
     for i in range(min(10, numLines)):
-        print(lines_ochiai[i].lineNo, '\t', lines_ochiai[i].score, '  ', '\t','\t', lines_ochiai[i].rank, '\t', lines_ochiai[i].text.rstrip())
+        print(lines_ochiai[i].lineNo, '\t', lines_ochiai[i].score, '\t', '\t', lines_ochiai[i].rank, '\t', lines_ochiai[i].text.rstrip())
+
+def printToScreen_op2():
+    print("Top 10 most suspicious lines")
+    print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
+    for i in range(min(10, numLines)):
+        print(lines_op2[i].lineNo, '\t', lines_op2[i].score, '\t', '\t', lines_op2[i].rank, '\t', lines_op2[i].text.rstrip())
 
 def printToScreen_barinel():
     print("Top 10 most suspicious lines")
     print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
     for i in range(min(10, numLines)):
-        print(lines_barinel[i].lineNo, '\t', lines_barinel[i].score, '  ', '\t','\t', lines_barinel[i].rank, '\t', lines_barinel[i].text.rstrip())
-
-def printToScreen_jaccard():
-    print("Top 10 most suspicious lines")
-    print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
-    for i in range(min(10, numLines)):
-        print(lines_jaccard[i].lineNo, '\t', lines_jaccard[i].score, '  ', '\t','\t', lines_jaccard[i].rank, '\t', lines_jaccard[i].text.rstrip())
-
-def printToScreen_AMPLE():
-    print("Top 10 most suspicious lines")
-    print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
-    for i in range(min(10, numLines)):
-        print(lines_AMPLE[i].lineNo, '\t', lines_AMPLE[i].score, '  ', '\t','\t', lines_AMPLE[i].rank, '\t', lines_AMPLE[i].text.rstrip())
+        print(lines_barinel[i].lineNo, '\t', lines_barinel[i].score, '\t', '\t', lines_barinel[i].rank, '\t', lines_barinel[i].text.rstrip())
 
 def printToScreen_sum():
     print("Top 10 most suspicious lines")
     print('Line', '\t', 'Suspiciousness', '\t', 'Rank', '\t', 'Line of Code')  # , '\t', tests[0], '\t', tests[1], '\t', tests[2], '\t', tests[3], '\t', tests[4], '\t', tests[5]
     for i in range(min(10, numLines)):
-        print(lines_sum[i].lineNo, '\t', lines_sum[i].score, '  ', '\t','\t', lines_sum[i].rank, '\t', lines_sum[i].text.rstrip())
+        print(lines_sum[i].lineNo, '\t', lines_sum[i].score, '\t', '\t', lines_sum[i].rank, '\t', lines_sum[i].text.rstrip())
 
 ##############################################
 
 # output.txt 에 결과 작성
 def exportToFile():
     file = open(outputFile, "w")
-    # file.write('Line\tSuspiciousness\tRank\t')
-    # for i in range(len(tests)):
-    #     file.write(str(tests[i]) + '\t')
-    # file.write('\n')
 
-    # # 현재 문제 왜 tarantula가 아니라 sum 으로 출력되는가
-    # file.write('tarantula\n')
-    # text_tarantula = []
-    # for i in range(0, numLines):
-    #     text_tarantula.append(str(lines_tarantula[i].lineNo) + ' \t\t' + str(lines_tarantula[i].score) + ' ' + '\t\t\t' + str(
-    #         lines_tarantula[i].rank) + '\t\t' + str(lines_tarantula[i].text.rstrip()) + '\n')
-    # text_tarantula.sort(key=lambda x: (int(re.search(r"\d+", x).group())))
-
-    # for i in range(0, numLines):
-    #     try:
-    #         file.write(text_tarantula[i])
-    #     except IndexError:
-    #         continue
-
-    # file.write('\nsum\n')
-
-    text_sum = []
-    for i in range(0, numLines):
-            score = float(lines_sum[i].score)
-            if score >= 0.4:
-                text_sum.append(str(lines_sum[i].lineNo) + "@" + str(lines_sum[i].text.rstrip())+ " # " + str(lines_sum[i].score) + '\n')
-            else:
-                text_sum.append(str(lines_sum[i].lineNo)+ "@" + str(lines_sum[i].text.rstrip())+ '\n')
-        # text_sum.append(str(lines_sum[i].lineNo) + ' \t\t' + str(lines_sum[i].score) + ' ' + '\t\t\t' + str(lines_sum[i].rank) + '\t\t' + str(lines_sum[i].text.rstrip()) + '\n')
-    
-    text_sum.sort(key=lambda x: (int(re.search(r"\d+", x).group())))
-
-    for i in range(0, numLines):
-        try:
-            if i == numLines - 1:
-                file.write(text_sum[i][text_sum[i].index("@") + 1:].replace('\n',''))
-            else:    
-                file.write(text_sum[i][text_sum[i].index("@") + 1:])
-        except IndexError:
-            continue
-
-    # # file.write('\t\t\t\t\t\t\t\t ')
-    # for i in range(len(tests)):
-    #     file.write(str(results[tests[i]]) + '\t\t  ')
-    file.close()
+    # write full
+    # file.write(
+    #     'Line\tSuspiciousness\tRank\t' + str(tests[0]) + '\t' + str(tests[1]) + '\t' + str(tests[2]) + '\t' + str(
+    #         tests[3]) + '\t' + str(tests[4]) + '\t' + str(tests[5]) + '\n')
 
     # text = []
     # for i in range(0, numLines):
-    #     try:
-    #         score = float(lines[i].score)
-    #         print(lines[i].score)
-    #         if score >= 0.5:
-    #             text.append(str(lines[i].text.rstrip())+ " # " + str(lines[i].score) + '\n')
-    #         else:
-    #             text.append(str(lines[i].text.rstrip())+ '\n')
-    #     except IndexError as ValueError:
-    #         print (ValueError)    
+    #     text.append(str(lines[i].lineNo) + ' \t\t' + str(lines[i].score) + '  \t\t\t' + str(lines[i].rank) + '\t\t' + str(lines[i].text.rstrip()) + '\n')
+    # text.sort(key=lambda x: (int(re.search(r"\d+", x).group())))
 
-    # # text.sort(key=lambda x: (int(re.search(r"\d+", x).group())))
     # for i in range(0, numLines):
     #     try:
     #         file.write(text[i])
     #     except IndexError:
     #         continue
+
+    # file.write('\t\t\t\t\t\t\t\t' + str(results[tests[0]]) + '\t\t' + str(results[tests[1]]) + '\t\t' +
+    #             str(results[tests[2]]) + '\t\t' + str(results[tests[3]]) + '\t\t' + str(results[tests[4]]) + '\t\t' +
+    #             str(results[tests[5]]))
     # file.close()
-    print("\nDetailed report exported to output.txt")
+
+    text = []
+    for i in range(0, numLines):
+        try:
+            score = float(lines[i].score)
+            if score >= 0.5:
+                text.append(str(lines[i].text.rstrip())+ " # " + str(lines[i].score) + '\n')
+            else:
+                text.append(str(lines[i].text.rstrip())+ '\n')
+        except IndexError as ValueError:
+            print (ValueError)    
+
+    # text.sort(key=lambda x: (int(re.search(r"\d+", x).group())))
+    for i in range(0, numLines):
+        try:
+            file.write(text[i])
+        except IndexError:
+            continue
+    file.close()
+    print("Detailed report exported to output.txt")
+
 
 
 ### Globals - appearing as the very incarnation of devil himself
@@ -380,9 +367,8 @@ totalFailed = 0.0
 lines = []
 lines_tarantula = []
 lines_ochiai = []
+lines_op2 = []
 lines_barinel = []
-lines_jaccard = []
-lines_AMPLE = []
 lines_sum = []
 testCode = []
 testCaseResuts = []
@@ -406,16 +392,13 @@ for i in range(len(tests)):
     # funName*(tests[i])) -> mid.py 를 테스트 케이스로 실행
     exec ('%s(*(tests[i]))' % funName)
 
-    # 테스트케이스가 지나는 커버리지 확인하기 위해 추가
-    # for, while 커버리지 중복 제거 #############
+    # 테스트케이스가 지나는 커버리지 확인하기 위해 추가함
     unique = list(set(testToLines[tests[i]]))
-    unique = list(map(int, unique))
-    unique.sort()
+    unique = sorted(unique)
     testToLines[tests[i]] = unique
-    ############################################
     if i == len(tests)-1:
         for j in range(len(tests)):
-            print("TestCase :", str(tests[j]), ",", str(results[tests[j]]), ", Coverage :", str(testToLines[tests[j]]))
+            print(str(tests[j]), ",", str(results[tests[j]]), ":", str(testToLines[tests[j]]))
 
 for i in range(1, numLines):
     if i not in lineToTest.keys():
@@ -427,23 +410,20 @@ suspiciousness_tarantula = {}
 scoreList_tarantula = []
 suspiciousness_ochiai = {}
 scoreList_ochiai = []
+suspiciousness_op2 = {}
+scoreList_op2 = []
 suspiciousness_barinel = {}
 scoreList_barinel = []
-suspiciousness_jaccard = {}
-scoreList_jaccard = []
-suspiciousness_AMPLE = {}
-scoreList_AMPLE = []
 suspiciousness_sum = {}
 scoreList_sum = []
 list_num = []
 
-
+# list(lineToTest) 순서 문제 2.7에서는 순서대로인게 3.7에서는 순서 섞임
 for k in list(lineToTest):
     list_num.append(k)
-    passfail(k)
     # tarantula
     try:
-        score = scores_tarantula()   # 의심도 계산 알고리즘 적용하는 곳
+        score = scores_tarantula(k)   # 의심도 계산 알고리즘 적용하는 곳
         scoreList_tarantula.append(score)
     except:
         score = 0.0
@@ -456,7 +436,7 @@ for k in list(lineToTest):
 
     # ochiai
     try:
-        score = scores_ochiai()   # 의심도 계산 알고리즘 적용하는 곳
+        score = scores_ochiai(k)   # 의심도 계산 알고리즘 적용하는 곳
         scoreList_ochiai.append(score)
     except:
         score = 0.0
@@ -467,9 +447,22 @@ for k in list(lineToTest):
         else:
             suspiciousness_ochiai[score] = [k]
 
+    # op2
+    try:
+        score = scores_op2(k)   # 의심도 계산 알고리즘 적용하는 곳
+        scoreList_op2.append(score)
+    except:
+        score = 0.0
+        scoreList_op2.append(score)
+    finally:
+        if score in suspiciousness_op2.keys():
+            suspiciousness_op2[score].append(k)
+        else:
+            suspiciousness_op2[score] = [k]
+
     # barinel
     try:
-        score = scores_barinel()   # 의심도 계산 알고리즘 적용하는 곳
+        score = scores_barinel(k)   # 의심도 계산 알고리즘 적용하는 곳
         scoreList_barinel.append(score)
     except:
         score = 0.0
@@ -480,35 +473,9 @@ for k in list(lineToTest):
         else:
             suspiciousness_barinel[score] = [k]
 
-    # jaccard
-    try:
-        score = scores_jaccard()   # 의심도 계산 알고리즘 적용하는 곳
-        scoreList_jaccard.append(score)
-    except:
-        score = 0.0
-        scoreList_jaccard.append(score)
-    finally:
-        if score in suspiciousness_jaccard.keys():
-            suspiciousness_jaccard[score].append(k)
-        else:
-            suspiciousness_jaccard[score] = [k]
-
-    # AMPLE
-    try:
-        score = scores_AMPLE()   # 의심도 계산 알고리즘 적용하는 곳
-        scoreList_AMPLE.append(score)
-    except:
-        score = 0.0
-        scoreList_AMPLE.append(score)
-    finally:
-        if score in suspiciousness_AMPLE.keys():
-            suspiciousness_AMPLE[score].append(k)
-        else:
-            suspiciousness_AMPLE[score] = [k]
-
     # sum
     try:
-        score = (scores_tarantula() + scores_ochiai() + scores_barinel() + scores_jaccard() + scores_AMPLE()) / 5
+        score = (scores_tarantula(k) + scores_ochiai(k) + scores_op2(k) + scores_barinel(k)) / 4
         score = round(score, 3)
         scoreList_sum.append(score)
     except:
@@ -523,36 +490,35 @@ for k in list(lineToTest):
 
 ranked_tarantula = rank(suspiciousness_tarantula)
 makeListOfAllLines_tarantula()
+removeKachra()
 lines_tarantula.sort()
 print('\ntarantula')
 printToScreen_tarantula()
 
 ranked_ochiai = rank(suspiciousness_ochiai)
 makeListOfAllLines_ochiai()
+removeKachra()
 lines_ochiai.sort()
 print('\nochiai')
 printToScreen_ochiai()
 
+ranked_op2 = rank(suspiciousness_op2)
+makeListOfAllLines_op2()
+removeKachra()
+lines_op2.sort()
+print('\nop2')
+printToScreen_op2()
+
 ranked_barinel = rank(suspiciousness_barinel)
 makeListOfAllLines_barinel()
+removeKachra()
 lines_barinel.sort()
-print ('\nbarinel')
+print('\nbarinel')
 printToScreen_barinel()
-
-ranked_jaccard = rank(suspiciousness_jaccard)
-makeListOfAllLines_jaccard()
-lines_jaccard.sort()
-print ('\njaccard')
-printToScreen_jaccard()
-
-ranked_AMPLE = rank(suspiciousness_AMPLE)
-makeListOfAllLines_AMPLE()
-lines_AMPLE.sort()
-print ('\nAMPLE')
-printToScreen_AMPLE()
 
 ranked_sum = rank(suspiciousness_sum)
 makeListOfAllLines_sum()
+removeKachra()
 lines_sum.sort()
 print('\nsum')
 printToScreen_sum()

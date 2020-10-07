@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
+import { ControlledEditor, DiffEditor } from "@monaco-editor/react";
 import styled from 'styled-components'
 import { Row, Col, Button } from 'antd'
 import { IdcardFilled, UploadOutlined } from '@ant-design/icons'
-import Editor from "@monaco-editor/react";
 import Images from '../../contans/Image'
 import SourceEditor from './components/SourceEditor'
 import sampleCode from '../../contans/sampleCode'
@@ -14,16 +13,19 @@ import { Steps } from 'antd';
 import ProcessLoading from './components/ProcessLoading'
 import EditorAPI from '../../api/EditorAPI'
 import $ from 'jquery';
-import { MonacoDiffEditor } from 'react-monaco-editor';
+// import { MonacoDiffEditor } from 'react-monaco-editor';
+
 
 function EditorPage(props) {
 
-    const [editor1Content, setContentEditor1] = useState(sampleCode["c"]);
+    const [uploadLanguage, setUploadLanguage] = useState('python');
+
+    const [editor1Content, setContentEditor1] = useState(sampleCode[uploadLanguage]);
     const [editor2Content, setContentEditor2] = useState('');
     
     //basic format 
     const [viewEditor, setViewEditor] = useState('code');
-    const [formatEditor1, setFormatEditor1] = useState('c');
+    const [formatEditor1, setFormatEditor1] = useState('python');
     
     //file code
     const [listFile, setListFile] = useState([]); 
@@ -35,6 +37,19 @@ function EditorPage(props) {
 
     const fileHandlerCode = (event) => {
         setListFile([...listFile, event.target.files[0]])
+        
+        let fileName = event.target.files[0].name;
+        let indexOf = fileName.toString().indexOf(".");
+        let language = fileName.substring(indexOf + 1, fileName.length)
+        switch (language) {
+            case "py":
+                setUploadLanguage("python")
+                break;
+            default:
+                setUploadLanguage(language)
+                break;
+        }
+
         var fr=new FileReader();
         fr.onload = function() { 
             setContentEditor1(fr.result); 
@@ -45,6 +60,8 @@ function EditorPage(props) {
 
     const fileHandlerTestCase = (event) => {
         setListFileTestCase([...listFileTestCase, event.target.files[0]])
+        let fileName = event.target.files[0];
+        console.log(fileName);
         var fr=new FileReader();
         fr.onload = function() { 
             setContentEditor1(fr.result); 
@@ -54,19 +71,23 @@ function EditorPage(props) {
     }
 
 
+    const [submit, setSubmit] = useState(false);
     const [process, setProcess] = useState('false');
     const [selectLine, setSelectLine] = useState(0);
     const [step, setStep] = useState(0);
 
     const onSubmit = async () => {
-
-        
+        setSubmit(true);
         switch (step) {
             case 0:
+                $(".view-line").on( "click", function() {
+                    alert("hello")
+                });
+
                 setProcess(!process);
                 setTimeout( async () => {
                     let params = {
-                        code: codeContent ? codeContent : sampleCode["c"],
+                        code: codeContent ? codeContent : sampleCode["python"],
                         testCase: testCaseContent ? JSON.stringify(testCaseContent) : JSON.stringify(sampleTestCase["base"])
                     }
                     const response = await EditorAPI.compile(params);
@@ -102,8 +123,10 @@ function EditorPage(props) {
                     alert("수정한 라인을 선택하세요")
                 }
                 break;
-            case 2:
-                window.location.reload();
+            case 2: //reset
+                setStep(0);
+                setSubmit(false);
+                setContentEditor1(sampleCode["python"])
                 break;  
             default:
                 alert("입력한 값을 다시 확인하여 클릭 하세요")
@@ -115,18 +138,16 @@ function EditorPage(props) {
 
     const options = {
         suggestLineHeight: 10,
-        selectOnLineNumbers: true,
+        diffOverviewRuler: false
     };
 
     useEffect(() => {
-        $(".modified ").on('dblclick',"div.view-line",function (event) {
+        $("body").on("dblclick", ".modified-in-monaco-diff-editor .view-line", function(event) {
             Array.from(document.querySelectorAll(".modified .view-line"))
-                .forEach(function(val) {
+            .forEach(function(val) {
                     val.style.background="transparent";
             });
             var target = event.target;
-            console.log(event.target.nodeName)
-            console.log(event.currentTarget.nodeName)
 
             if(event.target.nodeName === "DIV")
                 target.style.background = "blue";
@@ -155,8 +176,8 @@ function EditorPage(props) {
                     <ul>
                         <li onClick={() => {
                             setViewEditor('code')
-                            setContentEditor1(sampleCode["c"])
-                            setFormatEditor1('c')
+                            setContentEditor1(sampleCode["python"])
+                            setFormatEditor1('python')
                     }}
                         ><i className="fa fa-clipboard"></i></li>
                         <li onClick={() => {
@@ -181,23 +202,50 @@ function EditorPage(props) {
                 }
             </Col>
             <Col xs={0} sm={4} md={3} lg={2} style={{background: ''}}>
-                <Button type={ step === 2 ? "danger" : "primary"} style={{width:'100%'}} onClick = {onSubmit}> { step === 2 ? "Reset" : "Run"} </Button>
+                <Button type={ step === 2 ? "danger" : step === 1 ? "default" : "primary" } style={{width:'100%'}} onClick = {onSubmit}> { step === 2 ? "Reset" : step === 1 ? "Correct" : "Run"} </Button>
                 {
                     !process && <ProcessLoading /> 
                 }
             </Col>
-            <Col xs={12} sm={10} md={9} lg={18} style={{background: ''}}>
-                <MonacoDiffEditor
-                    language= "c"
-                    original={
+            <Col xs={12} sm={10} md={9} lg={18}>
+                {
+                    !submit ? 
+                    <ControlledEditor
+                        theme="dark"
+                        language={"python"}
+                        value={
+                            viewEditor === 'code' ? 
+                            codeContent ?  codeContent : editor1Content : 
+                            testCaseContent ? testCaseContent : editor1Content
+                        }
+                        options={options}
+                    /> : 
+                    <DiffEditor
+                        language= "python"
+                        original={
+                            viewEditor === 'code' ? 
+                            codeContent ?  codeContent : editor1Content : 
+                            testCaseContent ? testCaseContent : editor1Content
+                        }
+                        theme="vs-dark"
+                        modified={editor2Content}
+                        options={options}
+                        className="editor-container"
+                        loading={Loading}
+                    />
+
+                }
+                {/* <ControlledEditor
+                    theme="dark"
+                    width="50%"
+                    language="python"
+                    value={
                         viewEditor === 'code' ? 
                         codeContent ?  codeContent : editor1Content : 
                         testCaseContent ? testCaseContent : editor1Content
                     }
-                    theme="vs-dark"
-                    value={editor2Content}
                     options={options}
-                />
+                /> */}
             </Col>
             </Row>
         </Wrapper>
@@ -257,24 +305,6 @@ const Wrapper = styled.div`
                         background: #42455A;
                     }
                 }
-            }
-        }
-    
-        /* .original .view-line, .line-numbers{
-                background: #1E1E1E ;
-        }
-        .cldr{
-            z-index: 10;
-            background: #1E1E1E;
-        } */
-        .line-numbers{
-            /* background: red; */
-            z-index: 99 !important;
-            /* cursor: pointer !important; */
-            /* display: block; */
-    
-            &:hover{
-                /* background: blue; */
             }
         }
     }

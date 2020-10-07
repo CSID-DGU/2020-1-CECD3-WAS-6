@@ -1,13 +1,15 @@
-def mid(x,y,z):
-	m = z
-	if (y<z):
-		if(x<y):
-			m = y
-		elif (x<z): # 0.573
-			m = y # 0.718
-	else:
-		if(x>y):
-			m = y
-		elif (x>z):
-			m = x
-	return m
+def gcd(a,b):
+    if(a<0):
+        a = -a
+    if(b<0):
+        b = -b
+    if(a==0):
+        return b
+    if(b==0):
+        return a
+    while(b != 0): # 0.462
+        if(a>b): # 0.462
+            a = a - 1 # 0.64
+        else:
+            b = b - a # 0.462
+    return a # 0.462

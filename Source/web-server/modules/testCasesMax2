@@ -1,5 +1,4 @@
-export default {
-    'base':`1,2
+1,2
 1
 4,3
 1
@@ -16,5 +15,4 @@ export default {
 0,5
 5
 0,10
-10`
-}
+10

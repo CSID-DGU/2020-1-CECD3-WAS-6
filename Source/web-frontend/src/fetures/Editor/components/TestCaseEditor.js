@@ -25,9 +25,9 @@ function TestCaseEditor({ listFileTestCase,fileHandler }) {
             {
                 listFileTestCase.length !== 0 ?
                     listFileTestCase.map((item, idx) => (
-                        <li><img src = {Images.cImage}/>{item.name}</li>
+                        <li><img src = {Images.fileImage}/>{item.name}</li>
                     )) :
-                <li><img src = {Images.jsonImage}/>testcase.json</li>
+                <li><img src = {Images.fileImage}/>testcase.json</li>
             }
         </ul>
     </Wrapper>
