@@ -1,16 +1,10 @@
 import scala.util.parsing.combinator._
 import scala.collection.mutable.Map
-
-/*
-입력 프로그램을 인식하고, 후보 프로그램들을 생성하여 프로그램 공간을 구성한다.
-*/
+import scala.collection.immutable.ListSet
+import scala.util.control.Breaks
 
 class Synthesize extends RegexParsers {
-  var space = List[String]()
-  val cur = ""
-
-  val reserved = Set("if", "while", "else")
-  val token = Set("assign", "truth", "expr")
+  var space = ListSet[String]()
 
   val op = List("+", "-", "/", "%", "*")
   val glt = List("<", ">", "==")
@@ -34,7 +28,7 @@ class Synthesize extends RegexParsers {
       }
     }
   }
-  def OP= ("""[+|-|*|/|%]""".r | "OP") ^^ {
+  def OP= ("""[-|+|*|/|%]""".r | "OP") ^^ {
     case x => {
       x match{
         case "OP" => derive("OP")
@@ -42,7 +36,7 @@ class Synthesize extends RegexParsers {
       }
     }
   }
-  def GLT = ("""[==|<|>]""".r | "GLT") ^^ {
+  def GLT = ("==" | "<" | ">" | "GLT") ^^ {
     case x => {
       x match{
         case "GLT" => derive("GLT")
@@ -79,7 +73,6 @@ class Synthesize extends RegexParsers {
       }
     }
     case op1=>{
-      println("HI")
       op1 match{
         case "EXPR"=> derive("EXPR")
         case x => x
@@ -87,7 +80,7 @@ class Synthesize extends RegexParsers {
     }
   }
 
-  def TRUTH: Parser[Any] = ("TRUTH"| "true" | "false" | OPERAND ~ GLT ~ OPERAND) ^^ {
+  def TRUTH: Parser[Any] = ("!!" | "TRUTH"| "true" | "false" | OPERAND ~ GLT ~ OPERAND) ^^ {
     case operand1 ~ opx ~ operand2 =>{
       var first = List[String]()
       operand1 match{
@@ -106,7 +99,7 @@ class Synthesize extends RegexParsers {
     }
     case itself =>{
       itself.toString match{
-        case "TRUTH" => derive("TRUTH")
+        case "!!" | "TRUTH" => derive("TRUTH")
         case "true" | "false" => List(itself.toString)
       }
     }
@@ -186,22 +179,32 @@ class Synthesize extends RegexParsers {
     candidateProg
   }
 
+  def space_(x:String) = this.space = ListSet(x)
+
   def synthesize() ={
+    var searched = ListSet[String]()
+    val loop = new Breaks
+
     while (!space.isEmpty){
-      val prog = space.head
-      val derive = this.parseAll(this.CLAUSE, prog)
+      val prog = space.last
+      val derive = this.parseAll(this.CLAUSE, prog).get
+      searched = searched ++ ListSet[String](prog)
 
       derive match{
         case candidates:List[String] => {
-          if (candidates.size <= 1){
-            // TODO: verify the derive
-          }
-          else{
-            // continue derivation
-            space = space :: candidates
+          space = space - (prog)
+          for{x <- candidates} {
+            x match{
+              case x1:String => {
+                if (!searched.exists(_==x1))
+                  space = space ++ ListSet[String](x)
+              }
+            }
           }
         }
       }
+      if (space.size == 0) // 프로그램 공간에 있는 모든 후보 프로그램들을 탐색하였을 때
+        loop.break
     }
   }
 }
