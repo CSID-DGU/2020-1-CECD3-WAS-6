@@ -17,6 +17,7 @@ function Header(props) {
 
     const logoutHandler = async () => {
         const request = await userAPI.logOutUser();
+        localStorage.removeItem('token');
         if(request.result){
             props.history.push("/signup");
         }else{
@@ -45,7 +46,6 @@ function Header(props) {
                         <li><span className="user-name">{user.userData ? user.userData.data.name : ''}</span></li> 
                         <li><Link to="/" onClick={logoutHandler} className="signout-btn signin-btn"><span><i className="fa fa-user"></i>LogOut</span></Link></li> 
                     </> 
-
                 }
             </ul>
         </Wrrapper>
@@ -54,6 +54,7 @@ function Header(props) {
 
 const Wrrapper = styled.div`
     /* border-bottom: 1px solid var(--clr-grey-1); */
+    background: rgb(33, 46, 68);
     ul {
         display: inline-flex;
         margin: 50px;

@@ -5,20 +5,18 @@ import ReactLoading from 'react-loading';
 
 function Loading(props) {
     return (
-        <Wrraper>
-            <ReactLoading type='cylon' color='#fff' height={'10%'} width={'10%'} />
-        </Wrraper>
+        <WrapperContainer>
+            <ReactLoading type='spinningBubbles' color='#fff' height={'3%'} width={'3%'} />
+        </WrapperContainer>
     )
 }
-const Wrraper = styled.div`
+const WrapperContainer = styled.div`
     display: flex;
-    align-content: center;
+    align-items: center;
     justify-content: center;
+    margin-top: 10%;
+    height: 100%;
 `
-
-Loading.propTypes = {
-
-}
 
 export default Loading
 

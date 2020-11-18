@@ -29,6 +29,7 @@ var editorRouter = require('./routes/editor');
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/editor', editorRouter);
+app.use('/static', express.static(path.join(__dirname, 'public')))
 
 // // catch 404 and forward to error handler
 // app.use(function(req, res, next) {
@@ -43,7 +44,6 @@ if (process.env.NODE_ENV === "production") {
 
   // index.html for all page routes
   app.get("*", (req, res) => {
-    console.log('aaaaaa')
     res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
   });
 }

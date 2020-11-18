@@ -14,6 +14,9 @@ const Login = React.lazy(() => import('./fetures/Login'));
 const Register = React.lazy(() => import('./fetures/Register'))
 const Editor = React.lazy(() => import('./fetures/Editor'))
 const Error = React.lazy(() => import('./components/Error'));
+const ProjectManage = React.lazy(() => import('./fetures/ProjectManager'))
+const ProjectBuildHistory = React.lazy(() => import('./fetures/ProjectBuildHistory'))
+const CheckPage = React.lazy(() => import('./fetures/CheckPage'))
 
 function App() {
   return (
@@ -21,13 +24,14 @@ function App() {
       <Router>
       <Header/>
         <Switch>
-          
-          <Route exact path='/'     component={Auth(Dashboard, null)} />
+          <Route exact path='/' component={Auth(Dashboard, null)} />
           <Route exact path='/signin' component={Auth(Login, false)} />
           <Route exact path='/signup' component ={Auth(Register, false)} />
+          <Route exac path ='/projectmanage'component ={Auth(ProjectManage, null)} />
           <Route exact path='/editor' component={Auth(Editor, null)} />
-
-        <Route path ='*'>
+          <Route exact path='/history' component={Auth(ProjectBuildHistory, null)} />
+          <Route exact path='/checkpage' component={<CheckPage />} />
+          <Route path ='*'>
           <Error/>
         </Route>
         </Switch>

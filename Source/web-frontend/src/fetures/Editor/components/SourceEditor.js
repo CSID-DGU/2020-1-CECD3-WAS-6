@@ -16,11 +16,13 @@ function SourceEditor({listFile, fileHandler}) {
         codeFile.onchange = fileHandler;
     }
     return (
-        <Wrraper className="file-list">
-            <label style={{paddingLeft: '5px',fontSize: '20px'}}>Files</label>
-            <button style={{paddingRight: '5px', fontSize: '20px', outline: 'none'}} className="upload-btn" onClick={onCLickOpenFile}>
-                <UploadOutlined /> 
-            </button>
+        <Wrapper className="file-list">
+            <div className="file-list__header">
+                <label style={{paddingLeft: '5px',fontSize: '10px'}}>EXPLORER FILES</label>
+                <button style={{paddingRight: '5px', fontSize: '15px', outline: 'none'}} className="upload-btn" onClick={onCLickOpenFile}>
+                    <UploadOutlined /> 
+                </button>   
+            </div>
             <ul>
                 {
                     listFile.length !== 0 ?
@@ -34,11 +36,19 @@ function SourceEditor({listFile, fileHandler}) {
                     <li><img src = {Images.pyImage}/>main.py</li>
                 }
             </ul> 
-        </Wrraper>
+        </Wrapper>
     )
 }
-const Wrraper = styled.div`
+const Wrapper = styled.div`
     .file-list{
+        &__header{
+            color: #b7b7b7;
+            border-bottom: 2px solid #363636;
+            padding: 5px 0px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
         .upload-btn{
             float: right;
             background: transparent;
