@@ -72,15 +72,14 @@ def importResultsFile():
                 tests.append(numbers)
             except ValueError:
                 break
-
             test_output = my_method(*numbers)   # 실행결과 리턴값
-
+            res.append(test_output)
             line2 = file.readline()
             # print line2
             # line2 는 각 테스트케이스 P/F or 예상결과
 
             expected = line2.strip('\n')
-            print('Expected :', expected, ', Result :', test_output)
+            exp.append(int(expected))
 
             # if line2 == 'F\n' or line2 == 'F':
             if int(line2) != test_output:
@@ -109,7 +108,6 @@ def rank(lineToTest):
 def passfail(line):
     global failed
     global passed
-
     # 테스트케이스 변수 하나일 경우
     if len(tests[0]) == 1:
         uni = list(set([tuple(set(item)) for item in lineToTest[line]]))
@@ -117,7 +115,7 @@ def passfail(line):
     # 그 외의 경우
     else:
         cases = lineToTest[line]
-    
+
     # for, while 커버리지 중복 제거
     remove_dup = list(set(map(tuple, cases)))
     cases = remove_dup
@@ -125,10 +123,12 @@ def passfail(line):
     failed = 0
     passed = 0
     for l in cases:
-        if results[l]:
-            passed += 1
-        else:
-            failed += 1
+        for m in range(len(tests)):
+            if(l==tests[m]):
+                if results[l]:
+                    passed += 1
+                else:
+                    failed += 1
 
 # tarantula
 def scores_tarantula():
@@ -356,7 +356,10 @@ lines_AMPLE = []
 lines_sum = []
 testCode = []
 testCaseResuts = []
-
+exp = []
+res = []
+dup_cov = []
+dup_num = []
 
 # importFileNames()
 exec(open(testFileName).read())
@@ -374,7 +377,7 @@ for i in range(len(tests)):
     # tests[]는 테스트케이스
     # funName = os.path.splitext(testFileName)[0] -> mid
     # funName*(tests[i])) -> mid.py 를 테스트 케이스로 실행
-    exec ('%s(*(tests[i]))' % funName)
+    exec('%s(*(tests[i]))' % funName)
 
     # 테스트케이스가 지나는 커버리지 확인하기 위해 추가
     # for, while 커버리지 중복 제거 #############
@@ -385,7 +388,45 @@ for i in range(len(tests)):
     ############################################
     if i == len(tests)-1:
         for j in range(len(tests)):
-            print("TestCase :", str(tests[j]), ",", str(results[tests[j]]), ", Coverage :", str(testToLines[tests[j]]))
+            print(j, ' Expected :', exp[j], ', Result :', res[j], ", TestCase :", str(tests[j]), ",", str(results[tests[j]]), ", Coverage :", str(testToLines[tests[j]]))
+
+    # 중복된 커버리지 같는 테스트케이스 추출 ##########################################
+    if i == len(tests)-1:
+        for j in range(len(tests)):
+            count = 0
+            for k in range(len(tests)):
+                if(testToLines[tests[j]] == testToLines[tests[k]] and results[tests[j]] == results[tests[k]]):
+                    count = count + 1
+                    if(count != 1):
+                        dup_cov.append(tests[k])
+
+    unique = list(set(dup_cov))
+    unique.sort()
+    dup_cov = unique
+
+    ##################################################################################
+
+    # totalpassed, totalfailed 줄이고 results, tests 중복 없애고 passfail 함수에서도 cases 중복되는 temp 제거 해야함
+    if i == len(tests) - 1:
+        count = 0
+        for j in range(len(tests)):
+            for k in range(len(dup_cov)):
+                if(tests[j] == dup_cov[k]):
+                    dup_num.append(j)
+                    if(results[tests[j]] == True):
+                        totalPassed = totalPassed - 1
+                    if(results[tests[j]] == False):
+                        totalFailed = totalFailed - 1
+        for j in range(len(dup_num)):
+            del tests[dup_num[j]-count]
+            del exp[dup_num[j]-count]
+            del res[dup_num[j]-count]
+            count = count + 1
+
+print('\n중복된 커버리지 통합 후')
+for j in range(len(tests)):
+    print(j, ' Expected :', exp[j], ', Result :', res[j], ", TestCase :", str(tests[j]), ",", str(results[tests[j]]), ", Coverage :", str(testToLines[tests[j]]))
+
 
 for i in range(1, numLines):
     if i not in lineToTest.keys():
@@ -406,7 +447,6 @@ scoreList_AMPLE = []
 suspiciousness_sum = {}
 scoreList_sum = []
 list_num = []
-
 
 for k in list(lineToTest):
     list_num.append(k)
