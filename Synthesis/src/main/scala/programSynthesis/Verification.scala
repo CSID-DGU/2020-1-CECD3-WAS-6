@@ -1,8 +1,6 @@
-package tlqkf
+package programSynthesis
 
 
-import scala.util.parsing.combinator._
-import com.microsoft.z3._
 
 class Verification extends RegexParsers {
   val ctx: Context = new Context(new java.util.HashMap[String, String])

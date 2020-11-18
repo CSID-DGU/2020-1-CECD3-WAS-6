@@ -1,7 +1,6 @@
-import scala.util.parsing.combinator._
-import scala.collection.mutable.Map
-import scala.collection.immutable.ListSet
-import scala.util.control.Breaks
+package programSynthesis
+
+
 
 class Synthesize extends RegexParsers {
   var space = ListSet[String]()
