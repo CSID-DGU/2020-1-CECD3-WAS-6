@@ -1,33 +1,40 @@
-package programSynthesis
+package tlqkf
 
-
+import scala.util.parsing.combinator._
+import scala.collection.mutable.Map
+import scala.collection.immutable.ListSet
+import scala.util.control.Breaks
 
 class Synthesize extends RegexParsers {
   var space = ListSet[String]()
-  var inputs = List[String]()
+  var inputs = ListSet[String]()
+  var isDerive = true
 
   val op = List("+", "-", "/", "%", "*")
   val glt = List("<", ">", "==", "!=")
 
   val clause = List("if ( TRUTH ): ASSIGN else: ASSIGN", "while ( TRUTH ): ASSIGN", "ASSIGN")
   val assign = List("VARIABLE = EXPR")
-  val expr = List("OPERAND OP OPERAND")
+  val expr = List("OPERAND", "OPERAND OP OPERAND")
   val truth = List("OPERAND GLT OPERAND")
-  val operand = List("VARIABLE", "NUMBER")
+  val operand = List("NUMBER", "VARIABLE")
   val node: Map[String, List[String]] = Map("CLAUSE" -> clause, "ASSIGN" -> assign, "EXPR" -> expr,
     "OPERAND" -> operand, "OP" -> op, "GLT" -> glt, "TRUTH" -> truth)
 
   // Terminal Symbol
   def NUMBER = ("""\d+(\.\d*)?""".r | "NUMBER") ^^  { _.toString }
   def VARIABLE = ("""[a-z]+(\[[a-z0-9]+\])?""".r | "VARIABLE") ^^ {
-    case "VARIABLE" => inputs
+    case "VARIABLE" => {
+      isDerive = true
+      inputs.toList
+    }
     case others => others.toString
-  }
+  } // 지금 변수 이름이 소문자 1개밖에 인식을 안하도록 해두었음
   def INPUT = ("""[a-z]+(\[[a-z0-9]+\])?""".r) ^^ { // 사용된 변수들을 저장함
     case examples =>{
       examples match{
         case example:String =>{
-          inputs :+= example
+          inputs = inputs ++ ListSet(example)
           example
         }
       }
@@ -36,7 +43,10 @@ class Synthesize extends RegexParsers {
   def OPERAND = ("OPERAND" | VARIABLE | NUMBER) ^^ {
     case x => {
       x match{
-        case "OPERAND" => { derive("OPERAND") }
+        case "OPERAND" => {
+          isDerive = true
+          derive("OPERAND")
+        }
         case _ => x
       }
     }
@@ -44,7 +54,10 @@ class Synthesize extends RegexParsers {
   def OP= ("""[-|+|*|/|%]""".r | "OP") ^^ {
     case x => {
       x match{
-        case "OP" => derive("OP")
+        case "OP" => {
+          isDerive = true
+          derive("OP")
+        }
         case _ => x
       }
     }
@@ -52,7 +65,10 @@ class Synthesize extends RegexParsers {
   def GLT = ("==" | "<" | ">" | "!=" | "GLT") ^^ {
     case x => {
       x match{
-        case "GLT" => derive("GLT")
+        case "GLT" => {
+          isDerive = true
+          derive("GLT")
+        }
         case _ => x
       }
     }
@@ -87,7 +103,10 @@ class Synthesize extends RegexParsers {
     }
     case op1=>{
       op1 match{
-        case "EXPR"=> derive("EXPR")
+        case "EXPR"=> {
+          isDerive = true
+          derive("EXPR")
+        }
         case x => x
       }
     }
@@ -112,7 +131,10 @@ class Synthesize extends RegexParsers {
     }
     case itself =>{
       itself.toString match{
-        case "!!" | "TRUTH" => derive("TRUTH")
+        case "!!" | "TRUTH" => {
+          isDerive = true
+          derive("TRUTH")
+        }
         case "true" | "false" => List(itself.toString)
       }
     }
@@ -139,7 +161,11 @@ class Synthesize extends RegexParsers {
     case itself =>{
       println("assign: ")
       itself.toString match{
-        case "??" | "ASSIGN" => derive("ASSIGN")
+        case "??" | "ASSIGN" =>{
+          inputs = inputs ++ ListSet("z")
+          isDerive = true
+          derive("ASSIGN")
+        }
       }
     }
   }
@@ -221,7 +247,9 @@ class Synthesize extends RegexParsers {
   def space_(x:String) = this.space = ListSet(x)
   def _space() = this.space
 
-  def synthesize() ={
+  def synthesize():String ={
+    var okpass = 0
+    var notpass = 0
     val verifier = new Verification
 
     var searched = ListSet[String]()
@@ -229,18 +257,25 @@ class Synthesize extends RegexParsers {
     var i = 0
 
     while (!space.isEmpty){
-      println(i)
       i = i + 1
       val prog = space.last
-      println(prog)
-      verifier.space_(prog)
-//      verifier.verify()
-      // if verification failed
-      //     continue
-      // else
-      // return the synthesized program
 
+      isDerive = false
       val derive = this.parseAll(this.FUNCTION, prog).get
+
+      // verification
+      verifier.space_(prog)
+      if (!isDerive) {
+        if (!verifier.verify().equals("NOANSWER")) {
+          okpass = okpass + 1
+          return prog
+
+        } else {
+          notpass = notpass + 1
+        }
+      }
+
+
       searched = searched ++ ListSet[String](prog)
 
       derive match{
@@ -256,8 +291,8 @@ class Synthesize extends RegexParsers {
           }
         }
       }
-      if (space.size == 0) // 프로그램 공간에 있는 모든 후보 프로그램들을 탐색하였을 때
-        loop.break
     }
+    println("result, ", okpass, " ", notpass)
   }
+  space
 }
