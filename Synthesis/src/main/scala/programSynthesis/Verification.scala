@@ -1,25 +1,33 @@
-package programSynthesis
+package tlqkf
 
+import scala.util.parsing.combinator._
+import com.microsoft.z3._
 
+import scala.collection.immutable.ListSet
 
 class Verification extends RegexParsers {
   val ctx: Context = new Context(new java.util.HashMap[String, String])
-  val solver: com.microsoft.z3.Solver = ctx.mkSolver()
   var z3Constraints = Set[String]()
+  var i = 0
 
   var space = ""
   var inputs = List[String]()
 
   // Terminal Symbol
   def NUMBER = ("""\d+(\.\d*)?""".r ) ^^  { _.toInt }
-  def VARIABLE = ("""[a-z]+(\[[a-z|0-9]+\])?""".r ) ^^ { _.toString }
+  def VARIABLE = ("""[a-z]+(\[[a-z|0-9]+\])?""".r | "NUMBER" ) ^^ {
+    case "NUMBER"=>{
+      i = i + 1
+      "NUMBER" + i.toString()}
+    case x => x.toString
+  }
   def OPERAND = ( VARIABLE | NUMBER) ^^ {
     case x => x
   }
   def OP= ("""[-|+|*|/|%]""".r ) ^^ {
     case x => x
   }
-  def GLT = ("==" | "<" | ">" ) ^^ {
+  def GLT = ("==" | "<" | ">" | "!=") ^^ {
     case x => x
   }
 
@@ -45,7 +53,7 @@ class Verification extends RegexParsers {
             case "-" => ctx.mkSub(operand1, operand2)
             case "*" => ctx.mkMul(operand1, operand2)
             case "/" => ctx.mkDiv(operand1, operand2)
-//            case "%" => ctx.mkMod(operand1, operand2)
+            case "%" => ctx.mkMod(operand1.asInstanceOf[IntExpr], operand2.asInstanceOf[IntExpr])
           }
         }
       }
@@ -68,8 +76,8 @@ class Verification extends RegexParsers {
       }
       val b:ArithExpr = {
         operand2 match{
-          case operand:Int => {ctx.mkNumeral(operand, ctx.mkIntSort()).asInstanceOf[ArithExpr]}
-          case operand:String =>{ctx.mkIntConst(operand)}
+          case operand:Int => ctx.mkNumeral(operand, ctx.mkIntSort()).asInstanceOf[ArithExpr]
+          case operand:String =>ctx.mkIntConst(operand)
         }
       }
       opx match{
@@ -108,18 +116,13 @@ class Verification extends RegexParsers {
         front match{
           case x ~ "=" =>{
             x match {
-              case x:String => ctx.mkEq(ctx.mkIntConst(x), rval)
+              case x:String => ctx.mkEq(ctx.mkIntConst(x.toString), rval)
             }
           }
         }
       }
       _expr
     }
-//    case None ~ _EXP => {// assignment가 아니면 논리식이 될 수 없음.
-//      _EXP match{
-//        case _expr:ArithExpr => _expr
-//      }
-//    }
   }
 
   def CLAUSE = ("if" ~ "(" ~ TRUTH ~ ")" ~ ":" ~ ASSIGN ~ opt("else" ~ ":" ~ ASSIGN) |
@@ -145,7 +148,8 @@ class Verification extends RegexParsers {
           }
         }
       }
-      ctx.mkOr(ctx.mkAnd(truthClause, assignClause), ctx.mkAnd(ctx.mkNot(truthClause), elseClause))
+
+      ctx.mkAnd(ctx.mkImplies(truthClause, assignClause), ctx.mkImplies(ctx.mkNot(truthClause), elseClause))
     }
     case "if" ~ "(" ~ truthStat ~ ")" ~ ":" ~ assignStat ~ None =>{
       val truthClause = {
@@ -176,40 +180,76 @@ class Verification extends RegexParsers {
   }
 
 
-//  def FUNCTION: Parser[Any] = ("def" ~ """[a-z]+""".r ~ "(" ~ INPUT ~ opt("," ~ INPUT) ~ ")" ~ ":" ~ CLAUSE) ^^ {
-//    case "def" ~ funcName ~ "(" ~ inputVar1 ~ Some(inputVar2) ~ ")" ~ ":" ~ clause =>{
-//      var space = List[String]()
-//      var programHeader = "def " + funcName + "("
-//      inputVar1 match{
-//        case inputVar:String => programHeader = programHeader + inputVar
-//      }
-//      inputVar2 match{
-//        case _ ~ inputVar=>{
-//          inputVar match{
-//            case inputVar:String => programHeader = programHeader + ", " + inputVar + "): "
-//          }
-//        }
-//      }
-//      clause match{
-//        case clause:List[String] => space = for(y <- clause) yield (programHeader + y)
-//      }
-//      space
-//    }
-//  }
+  def FUNCTION: Parser[BoolExpr] = ("def" ~ """[a-z]+""".r ~ "(" ~ INPUT ~ opt("," ~ INPUT) ~ ")" ~ ":" ~ CLAUSE ~ "return" ~ OPERAND) ^^ {
+    case "def" ~ _ ~ "(" ~ _ ~ _ ~ ")" ~ ":" ~ clause ~ "return" ~ _ =>{
+      clause
+    }
+  }
 
   def space_(x:String) = this.space = x
 
-  def verify() ={
-    solver.add(ctx.mkEq(ctx.mkIntConst("a"), ctx.mkInt(10)))
-    solver.add(this.parseAll(this.CLAUSE, space).get)
-//    solver.add(this.parseAll())
-//    println(this.parseAll(this.FUNCTION, space))// 여기에서 논리식이 생성됨.
+  def verify():String ={
+    val solver: com.microsoft.z3.Solver = ctx.mkSolver()
+    var varList = ListSet[String]("x", "y", "z")
+    i = 0
+    val iospec = List[(Int, Int, Int)]((1, 2, 2), (10, 20, 20), (30, 24, 30), (40, 39, 40), (1, 2, 2), (10, 20, 20),
+      (30, 24, 30), (40, 39, 40), (1, 10, 10), (100, -19, 100), (-10, -20, -10), (32, 1, 32), (1, 0, 1), (77, 29, 77))
 
-    if (solver.check == Status.SATISFIABLE) {
-      println("YES")
-      solver.getModel
-    }
-    else
-      "NO"
+    //specification
+    val specX = ctx.mkIntConst("x")
+    val specY = ctx.mkIntConst("y")
+    val specZ = ctx.mkIntConst("z")
+    val number1 = ctx.mkIntConst("NUMBER1")
+    val number2 = ctx.mkIntConst("NUMBER2")
+
+    solver.add(this.parseAll(this.FUNCTION, space).get)
+
+    iospec.foreach(io => {
+      solver.push()
+      solver.add(ctx.mkEq(specX, ctx.mkInt(io._1)))
+      solver.add(ctx.mkEq(specY, ctx.mkInt(io._2)))
+
+      if (solver.check != Status.SATISFIABLE){
+        return "NOANSWER"
+      }
+      val zAns = solver.getModel.eval(specZ, false)
+      zAns match{
+        case z:IntNum =>{
+          if (z.getInt != io._3) {
+            println("Z: ", z.getInt)
+            return "NOANSWER"
+          }
+        }
+        case _:IntExpr => return "NOANSWER"
+      }
+
+      solver.pop()
+      println(solver.getModel)
+      val res1 = solver.getModel.eval(number1, false)
+
+      val res2 = solver.getModel.eval(number2, false)
+
+      res1 match{
+        case res:IntNum => {
+          if (!varList.exists(_=="NUMBER1")) {
+            varList = varList ++ ListSet("NUMBER1")
+            space = space.substring(0, space.indexOf("NUMBER")) + res.getInt.toString + space.substring(space.indexOf("NUMBER")+ 6)
+          }
+        }
+        case _ =>
+      }
+      res2 match{
+        case res:IntNum =>{
+          if (!varList.exists(_=="NUMBER2")) {
+            varList = varList ++ ListSet("NUMBER2")
+            solver.add(ctx.mkEq(number2, ctx.mkInt(res.getInt)))
+            space = space.substring(0, space.indexOf("NUMBER")) + res.getInt.toString + space.substring(space.indexOf("NUMBER")+ 6)
+          }
+        }
+        case _ =>
+      }
+    })
+
+    space
   }
 }
