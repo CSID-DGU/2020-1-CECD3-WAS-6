@@ -12,7 +12,9 @@ function Dashboard(props){
             <Wrrapper className="container-content">
                 <div className="app-text">
                     <h2>A New Way to Learn.</h2>
-                    <p>WAS is the best platform to help you enhance your skills, <br/>expand your knowledge and prepare for technical interviews.</p>
+                    <p>WAS is the best platform for the beginner to help developing programming skills.
+                        <br/>You don't have to care about whom you study with.
+                        <br/>Just program it.</p>
                     <div className="signup-btn">
                         <div className="signup-btn-inner">
                             {

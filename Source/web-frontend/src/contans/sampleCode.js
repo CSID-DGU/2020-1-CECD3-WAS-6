@@ -1,17 +1,8 @@
 export default {
-    "python": `def gcd(a,b):
-    if(a<0):
-        a = -a
-    if(b<0):
-        b = -b
-    if(a==0):
-        return b
-    if(b==0):
-        return a
-    while(b != 0):
-        if(a>b):
-            a = a - 1   
-        else:
-            b = b - a
-    return a`	
+    "python": `def max(x, y): 
+    if (x > y):
+        z = x 
+    else:
+        z = y 
+    return z`	
 }

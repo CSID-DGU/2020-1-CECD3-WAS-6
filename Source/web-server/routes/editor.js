@@ -12,7 +12,6 @@ const fileController = require('../modules/file-controller')
 
 const { authorizationAPI } = require('../modules/check-middleware')
 
-
 const ROOT = process.env.ROOT;
 const PROJECTS = process.env.PROJECTS;
 const SAMPLECODE= process.env.samplecode;
@@ -34,6 +33,7 @@ router.post('/compile', async function(req, res, next){
             return;
         }
 
+        //Copy source for user file
         var today = moment(); 
         var folderBuild = `${today.toDate().getTime()}`.replace(/\s/g, '');
         const buildFile = path.resolve(PROJECTS, `${name}/${project[0].project_name}/build/${folderBuild}`);
@@ -59,8 +59,19 @@ router.post('/compile', async function(req, res, next){
         }
         await db.query(sql.user.insertHistoryBuild, [project[0].id, id, folderBuild]);
 
+
+        const codeFileCompile = path.resolve(ROOT, 'max.py')
+        fs.writeFileSync(codeFileCompile, code ,function(err) {
+            if(err) return console.error('Source write error' + err);
+        })
+
+
+        const testcaseFileCompile = path.resolve(ROOT, 'testcase')
+        fs.writeFileSync(testcaseFileCompile, testCase ,function(err) {
+            if(err) return console.error('Source write error' + err);
+        })
         const pathOutput = path.resolve(ROOT, 'output.txt');
-        const python = tarantula.compileTarantula();
+        const python = tarantula.compileTarantula('max.py');
         
         python.on('close', (code) => {
             // console.log(`child process close all stdio with code ${code}`);
@@ -114,7 +125,37 @@ router.post('/creatproject',async  function(req, res, next){
         console.log(error)
     }
 })
-
+router.delete('/delete', async function(req, res, next){
+    const { id : userId, name } = req.user._user[0] 
+    const { projectId } = req.query;
+    const [row] = await db.query(sql.user.selectProjectByAllId, [userId, projectId])
+    
+    try {
+        if(row.length === 1) {
+            await db.query(sql.user.deleteProject, [projectId])
+            await db.query(sql.user.deleteHistoryProject, [projectId])
+            res.status(200).send({
+                result: true,
+                data: [],
+                message: '프로젝트 성공'
+            })
+        }else{
+            res.status(200).send({
+                result: false,
+                data: [],
+                message: '프로젝트 실패'
+            })
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(200).send({
+            result: false,
+            data: [],
+            message: '프로젝트 실패'
+        })
+        
+    }
+})
 router.get('/getprojectbyid',async  function(req, res, next){
     try {
         const { id : userId, name } = req.user._user[0] 
@@ -250,10 +291,22 @@ router.get('/gethistory',async  function(req, res, next){
 })
 
 router.get('/modify', async function(req, res, next){
-    const { selectLine } = req.query;
+    const { selectLine, project_id } = req.query;
     
     const pathOutput = path.resolve(ROOT, 'output.txt');
     const modifyCode = await tarantula.modifyLine(selectLine, pathOutput);
+    // const { name } = req.user._user[0] 
+
+    // const [project] = await db.query(sql.user.selectProject, [project_id]);
+    // const [buildProject] = await db.query(sql.user.selectProjectBuild, [project_id]);
+    // const buildFile = path.resolve(PROJECTS, `${name}/${project[0].project_name}/build/${buildProject[0].build_path}/modified.py`);
+
+    // if (fs.existsSync(buildFile)) 
+    // { 
+    //     fs.writeFileSync(buildFile, modifyCode ,function(err) {
+    //         if(err) return console.error('Source write error' + err);
+    //     })
+    // }
 
     res.status(200).send({
         result: true,
@@ -261,4 +314,118 @@ router.get('/modify', async function(req, res, next){
         message: '컴파일 성공'
     })
 })  
+
+
+router.post('/scalacompile', async function(req, res, next){
+    try {
+        const { code, project_id } = req.body;
+        var codeString = JSON.stringify(code)
+        var stringifyCode = codeString
+    
+        // var indexOfNewLine = getIndicesOf("\n", codeString)
+        //Xóa các khoảng trắng thành 1 khoảng
+        codeString = codeString.replace(/\\n/g, '');
+        codeString = codeString.replace(/\\r/g, '');
+    
+        var notMulSpace = codeString.replace(/  +/g, ' ');
+        
+        //Scale 코드를 컴파일해서 결과 출력함 
+        const modifyFinalCode = await tarantula.compileScale(codeString);
+        var formatCode = (str, result) => {
+            str = str.substring(1, str.length - 1)
+            var splitStr = str.split("\\n")
+            let index
+            for(let i = 0; i < splitStr.length; i++){ 
+                let str = splitStr[i]
+                str = str.replace(/  +/g, ' ');
+            
+                let tempIndex = index
+                index = result.indexOf(str);
+                if(Number(index) == -1){
+                    let strTo = splitStr[i+1]
+                    strTo = strTo.replace(/  +/g, ' ');
+                    
+                    let strFrom = splitStr[i-1]
+                    strFrom = strFrom.replace(/  +/g, ' ');
+
+                    let modifiedCode = ""
+                    if(str.includes("!!")){
+                        modifiedCode = result.substring((tempIndex + strFrom.length), result.indexOf(strTo)) 
+                        temp = modifiedCode.substring(modifiedCode.indexOf("(") + 1, modifiedCode.indexOf(")"))
+                        splitStr[i]=splitStr[i].replace("!!",temp)
+                        
+                    }else{
+                        modifiedCode = result.substring((tempIndex + strFrom.length), result.indexOf(strTo))
+                        splitStr[i] = splitStr[i].replace("??",modifiedCode)
+                    }
+                    splitStr[i] = splitStr[i].replace("??",modifiedCode)
+                }
+            }
+            var resultCode = ""
+            for(let i =0 ; i < splitStr.length; i++){
+                if(i === splitStr.length - 1){
+                    resultCode += splitStr[i]
+                }else{
+                    resultCode += splitStr[i] + "\n"
+                }
+            }
+            return resultCode
+        }
+        let remoteFirstLastSpace = stringifyCode.substring(1, stringifyCode.length - 1).trim()
+        stringifyCode = `"${remoteFirstLastSpace}"`
+        // console.log("remote", remoteFirstLastSpace)
+        // console.log("befor", stringifyCode.charAt(stringifyCode.length - 1))
+        // if(stringifyCode.charAt(stringifyCode.length - 2) !== ` `){
+        //     console.log("remove")
+        //     stringifyCode = stringifyCode.substr(0, stringifyCode.length - 2)
+        //     stringifyCode = `${stringifyCode}"`
+        // }
+        const codeAfterFormat = formatCode(stringifyCode, modifyFinalCode)
+        const { name } = req.user._user[0] 
+        const [project] = await db.query(sql.user.selectProject, [project_id]);
+        const [buildProject] = await db.query(sql.user.selectProjectBuild, [project_id]);
+        const buildFile = path.resolve(PROJECTS, `${name}/${project[0].project_name}/build/${buildProject[0].build_path}/modified.py`);
+    
+        if (fs.existsSync(buildFile)) 
+        { 
+            fs.writeFileSync(buildFile, codeAfterFormat ,function(err) {
+                if(err) return console.error('Source write error' + err);
+            })
+            const mainCode = path.resolve(PROJECTS, `${name}/${project[0].project_name}/main.py`);
+            fs.writeFileSync(mainCode, codeAfterFormat ,function(err) {
+                if(err) return console.error('Source write error' + err);
+            })
+        }
+    
+        res.status(200).send({
+            result: true,
+            data: codeAfterFormat,
+            message: '컴파일 성공'
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(400).send({
+            result: [],
+            data: [],
+            message: '컴파일 실패함'
+        })
+    }
+})  
+
+function getIndicesOf(searchStr, str, caseSensitive) {
+    var searchStrLen = searchStr.length;
+    if (searchStrLen == 0) {
+        return [];
+    }
+    var startIndex = 0, index, indices = [];
+    if (!caseSensitive) {
+        str = str.toLowerCase();
+        searchStr = searchStr.toLowerCase();
+    }
+    while ((index = str.indexOf(searchStr, startIndex)) > -1) {
+        indices.push(index);
+        startIndex = index + searchStrLen;
+    }
+    return indices;
+}
 module.exports = router

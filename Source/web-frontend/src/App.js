@@ -17,6 +17,7 @@ const Error = React.lazy(() => import('./components/Error'));
 const ProjectManage = React.lazy(() => import('./fetures/ProjectManager'))
 const ProjectBuildHistory = React.lazy(() => import('./fetures/ProjectBuildHistory'))
 const CheckPage = React.lazy(() => import('./fetures/CheckPage'))
+const HowWorks = React.lazy(() => import('./fetures/HowWorks'))
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route exac path ='/projectmanage'component ={Auth(ProjectManage, null)} />
           <Route exact path='/editor' component={Auth(Editor, null)} />
           <Route exact path='/history' component={Auth(ProjectBuildHistory, null)} />
+          <Route exact path='/work' component={Auth(HowWorks, null)} />
           <Route exact path='/checkpage' component={<CheckPage />} />
           <Route path ='*'>
           <Error/>

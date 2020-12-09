@@ -33,6 +33,22 @@ function ProjectManage(props) {
             setListProject([...listProject, data])
         }, 500);
     }
+    const handleDeleteProject = async(id) => {
+        try{
+            const params = {
+                projectId: id
+            }
+            const response = await EditorAPI.deleteProject(params);
+            const { result } = response
+            if(result){
+                let listProjectTemp = listProject.filter(project => project.id !== id)
+                setListProject(listProjectTemp)
+            }
+        }catch(error){
+            alert('서버 연결 오류 발생했으니 다시 시도 해주세요. 프로젝트 다운로드 실패합니다.')
+            console.log(error)
+        }
+    }
     return (
         <WrapperDiv>
             <div className="nav-left">
@@ -46,6 +62,7 @@ function ProjectManage(props) {
                 </div>
                 <ListProject 
                     listProject = {listProject}
+                    handleDeleteProject={handleDeleteProject}
                 />
             </div>
             {
@@ -104,7 +121,7 @@ const WrapperDiv = styled.div`
 const CreateProjectWrapper = ({handleSubmit}) => {
 
     const [name, setName] = useState("")
-    const [language, setLanguage] = useState("C/C++")
+    const [language, setLanguage] = useState("Python")
     const _handleSubmit = () => {
         handleSubmit(name, language)
     }
@@ -120,9 +137,9 @@ const CreateProjectWrapper = ({handleSubmit}) => {
                 <div style={{marginTop: '20px'}}>
                     <label>언어</label><br/>
                     <Select defaultValue={language} style={{ width: "100%" }} onChange={(value) => setLanguage(value) }>
+                        <Option value="Python">Python</Option>
                         <Option value="C/C++">C/C++</Option>
                         <Option value="Java">Java</Option>
-                        <Option value="Python">Python</Option>
                     </Select>
                 </div>
                 <div style={{textAlign: "center", marginTop: '20px'}}>

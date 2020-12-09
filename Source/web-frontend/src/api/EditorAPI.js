@@ -29,7 +29,15 @@ const EditorAPI = {
     downloadProject: (params) => {
         const url ='/editor/download';
         return axiosClient.get(url,{ params })
-    } 
+    },
+    compileScala: (params) => {
+        const url ='/editor/scalacompile';
+        return axiosClient.post(url, params )
+    },
+    deleteProject: (params) => {
+        const url ='/editor/delete';
+        return axiosClient.delete(url,{ params })
+    }
 }
 
 export default EditorAPI;

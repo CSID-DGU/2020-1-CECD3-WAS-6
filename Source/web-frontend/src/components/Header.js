@@ -30,6 +30,7 @@ function Header(props) {
                 <li className="logo">
                     <img src= {Images.logoImage}  onClick={() => props.history.push("/")} />
                 </li>
+                <li><Link to="/projectmanage"><i className="fa fa-list-ul"></i>List Project</Link></li>
                 <li><Link to="/work"><i className="fa fa-cogs"></i>how it works</Link></li>
                 <li><Link to="/plans"><i className="fa fa-map-o"></i>future plans</Link></li>
                 <li><Link to="/about"><i className="fa fa-group"></i>about us</Link></li>

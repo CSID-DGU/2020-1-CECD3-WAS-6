@@ -85,6 +85,7 @@ function EditorPage(props) {
 
     const onSubmit = async (type) => {
         setSubmit(true);
+        setProcess(false)
         if(type === 'reset'){
             setStep(0);
             setSubmit(false);
@@ -101,7 +102,7 @@ function EditorPage(props) {
                     let params = {
                         project_id: qs.parse(props.location.search).p,
                         code: codeContent ? codeContent : sampleCode["python"],
-                        testCase: testCaseContent ? JSON.stringify(testCaseContent) : JSON.stringify(sampleTestCase["base"])
+                        testCase: testCaseContent ? testCaseContent : sampleTestCase["base"]
                     }
 
                     const response = await EditorAPI.compile(params);
@@ -119,28 +120,50 @@ function EditorPage(props) {
                 if(selectLine !== 0)
                 {
                     setProcess(!process);
-                    setTimeout( async () => {
-                        let params = {
-                            selectLine: selectLine
-                        }
+                    let params = {
+                        selectLine: selectLine,
+                        project_id: qs.parse(props.location.search).p,
+                    }
+                    try {
                         const response = await EditorAPI.modify(params);
                         const { data } = response;
                         
-                        setContentEditor2(data);
-    
-                        setProcess(false);
-                        let nextStep = step + 1;
-                        setStep(nextStep);
-    
-                    }, 1000);
+                        setTimeout( async () => {
+                            setContentEditor2(data);
+                            setProcess(false);
+                            let nextStep = step + 1;
+                            setStep(nextStep);
+                        }, 2000);
+                    } catch (error) {
+                        alert("빌드 실패합니다. 다시 시도해주세요.")
+                    }
                 }else{
                     alert("수정한 라인을 선택하세요")
                 }
                 break;
-            case 2: //reset
-                setStep(0);
-                setSubmit(false);
-                setContentEditor1(sampleCode["python"])
+            case 2: 
+                try {
+                    setProcess(!process);
+                    let params = {
+                        code: editor2Content,
+                        project_id: qs.parse(props.location.search).p,
+                    }
+                    const response = await EditorAPI.compileScala(params);
+                    console.log(response)
+                    const { data } = response;
+                    
+                    setTimeout( async () => {
+                        setContentEditor2(data);
+                        setProcess(false);
+                    }, 2000);
+                } catch (error) {
+                    setProcess(false);
+                    console.log(error)
+                    alert("빌드 실패합니다. 다시 시도해주세요.")
+                }
+                // setStep(0);
+                // setSubmit(false);
+                // setContentEditor1(sampleCode["python"])
                 break;  
             default:
                 alert("입력한 값을 다시 확인하여 클릭 하세요")
@@ -192,9 +215,9 @@ function EditorPage(props) {
             var target = event.target;
             
             if(event.target.nodeName === "DIV")
-            target.style.background = "black";
+            target.style.background = "blue";
             else    
-            target.parentNode.parentNode.style.background = "black";
+            target.parentNode.parentNode.style.background = "blue";
             
             var _line = (Number(target.style.top.replace(/[^0-9]/g, '')) / 19 ) + 1;
             setSelectLine(_line)

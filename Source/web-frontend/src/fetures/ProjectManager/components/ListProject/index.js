@@ -3,31 +3,33 @@ import PropTypes from 'prop-types'
 import {Link} from 'react-router-dom'
 import styled from 'styled-components'
 import mm from 'moment'
-import { ContainerOutlined, DownloadOutlined, ExportOutlined } from '@ant-design/icons'
+import { ContainerOutlined, DeleteOutlined, DownloadOutlined, ExportOutlined } from '@ant-design/icons'
 import { Tooltip } from 'antd'
 import EditorAPI from '../../../../api/EditorAPI'
-function ListProject({listProject}) {
-    console.log(listProject)
+function ListProject({listProject, handleDeleteProject}) {
     const handleDownload = async (id) => {
         try{
             const params = {
                 projectId: id
             }
             const response = await EditorAPI.downloadProject(params);
-            console.log(response)
             const { data } = response;
             const { path } = data[0];
-            const link = document.createElement('a');
-            link.href = `${process.env.REACT_APP_SERVER_API}/${path}`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = `${process.env.REACT_APP_SERVER_API}/${path}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }, 1000 * 1);
 
         }catch(error){
             alert('서버 연결 오류 발생했으니 다시 시도 해주세요. 프로젝트 다운로드 실패합니다.')
             console.log(error)
         }
     }
+    
     return (
         listProject.length !== 0 &&
         listProject.map((item, idx) => 
@@ -46,6 +48,9 @@ function ListProject({listProject}) {
                     </Tooltip>
                     <Tooltip placement="bottomRight" title="빌드 히스토리">
                         <li><Link to= {`/history?p=${item.id}`}><ContainerOutlined /></Link></li>
+                    </Tooltip>
+                    <Tooltip placement="bottomRight" title="프로젝트 삭제">
+                        <li><Link onClick={() => handleDeleteProject(item.id)}><DeleteOutlined /> </Link></li>
                     </Tooltip>
 
                     </ul>

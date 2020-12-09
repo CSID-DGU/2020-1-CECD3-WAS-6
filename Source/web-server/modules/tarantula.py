@@ -321,7 +321,8 @@ def exportToFile():
     text_sum = []
     for i in range(0, numLines):
             score = float(lines_sum[i].score)
-            if score >= 0.4:
+            print(score)
+            if score >= 0.3:
                 text_sum.append(str(lines_sum[i].lineNo) + "@" + str(lines_sum[i].text.rstrip())+ " # " + str(lines_sum[i].score) + '\n')
             else:
                 text_sum.append(str(lines_sum[i].lineNo)+ "@" + str(lines_sum[i].text.rstrip())+ '\n')
