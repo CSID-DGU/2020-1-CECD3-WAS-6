@@ -1,29 +1,28 @@
-# 프로그램 자동 생성을 이용한 디버거 개발
-Development of Automated Debugger with Automatic Program Generation
+# 프로그램 합성과 결함 위치 식별을 이용한 자동 디버거 개발
+Development of an Automated Debugger with Program Synthesis and Fault Localization
 
 ## 2020-1-CECD3-WAS-6
-Hello! Everyone, This project is about an Automated Debugger which automatically finds lines of erroneous code and corrects them satisfying given specification. The debugger made of some techniques. The first technique that we use is Fault Localization. This technique finds lines that are likely to occur fault in execution. To be specific, in our project, we implement Coverage-based Fault Localization. Also, The Fault Localization calculates suspiciousness of error-prone code with some formulas such as Tarantula, Ochiai, etc. Second, Program Synthesis is one of the automated programming methods and generates code that satisfies given specification. In this project, this technique corrects error code which is specified by Fault Localization. As a result, this system will be served as a web application.
+Hello! Everyone, This project is about an Automated Debugger which automatically finds lines of erroneous code in an imperative program and corrects them satisfying given specification. The debugger made of some techniques. The first technique that we use is **Fault Localization**. This technique finds lines that are likely to occur fault in execution. Also, **Program Synthesis** is one of the automated programming methods and generates code that satisfies given specification. This wonderful technique corrects an error statement which is localized by the Fault Localization. As a result, this system will be served as a web application.
 
 \#program synthesis \#fault localization \#code repair \#debugging method
 
 ## **Design**
 
-Fault Localization
+### Fault Localization
+In this project, we implemented Coverage-based Fault Localization. The Fault Localization calculates suspiciousness of error-prone code with some formulas such as Tarantula, Ochiai, etc.
 - Coverage-based
 - Suspiciouness
     - Tarantula, Ochiai, OP2, ...
 
-Program Synthesis
+### Program Synthesis
+The synthsizer searches candidates which satisfies the given specification over program space. While searching over the program space, the synthesizer converts the candidate to a first-order logic formula and verifies whether it is satisfied by the specification.
+
 - Enumerative Search
 - Conflict Driven Clause Learning
 
 ### Project Model
 ![finalmodel](https://user-images.githubusercontent.com/24788751/102711747-5a0fa300-42ff-11eb-97bf-8e5d9fb57590.png)
 
-
-## **Future Work**
-- program synthesis optimization
-- fault localization testing
 
 ## **How2Use?**
 
@@ -112,4 +111,3 @@ Program Synthesis
 - 한용진 (DalnaraCrater) 
 - 오재혁 (OhJaeHyeok)
 - 응웬딩흐엉 (huonghope)
-- <del>정세인 (wnddkdpcqkd)</del>
