@@ -18,7 +18,7 @@ Program Synthesis
 - Conflict Driven Clause Learning
 
 ### Project Model
-![Debug_Model](https://user-images.githubusercontent.com/24788751/85994135-524b0200-ba32-11ea-9b92-98e629a459ec.png)
+![finalmodel](https://user-images.githubusercontent.com/24788751/102711747-5a0fa300-42ff-11eb-97bf-8e5d9fb57590.png)
 
 
 ## **Future Work**
