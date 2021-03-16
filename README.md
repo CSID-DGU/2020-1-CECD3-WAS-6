@@ -5,6 +5,7 @@ Development of an Automated Debugger with Program Synthesis and Fault Localizati
 Hello! Everyone, This project is about an Automated Debugger which automatically finds lines of erroneous code in an imperative program and corrects them satisfying given specification. The debugger made of some techniques. The first technique that we use is **Fault Localization**. This technique finds lines that are likely to occur fault in execution. Also, **Program Synthesis** is one of the automated programming methods and generates code that satisfies given specification. This wonderful technique corrects an error statement which is localized by the Fault Localization. As a result, this system will be served as a web application.
 
 \#program synthesis \#fault localization \#code repair \#debugging method
+Patent(특허 출원): 10-2020-0176727 (Korea)
 
 ## **Design**
 
